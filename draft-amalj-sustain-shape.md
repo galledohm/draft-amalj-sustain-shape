@@ -74,6 +74,7 @@ normative:
 informative:
   I-D.belmq-green-framework:
   I-D.petra-green-api:
+  I-D.bcmj-green-power-and-energy-yang:
 
 ...
 
@@ -223,9 +224,10 @@ module irtf-shape {
   }
 
   organization
-    "";
+    "IRTF SUSTAIN Research Group";
   contact
-    "";
+    "RG Web:   <https://datatracker.ietf.org/rg/sustain/about/>
+     RG List:  <sustain@irtf.org>";
   description
     "Initial YANG module for SHAPE API, v1.0.0
 
