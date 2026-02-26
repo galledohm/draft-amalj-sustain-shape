@@ -70,11 +70,13 @@ normative:
   RFC8309:
   RFC8340:
   RFC8341:
+  RFC9315:
 
 informative:
   I-D.belmq-green-framework:
   I-D.petra-green-api:
   I-D.bcmj-green-power-and-energy-yang:
+  I-D.irtf-nmrg-ibn-usecases:
 
 ...
 
