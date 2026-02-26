@@ -1225,12 +1225,6 @@ svg :is([fill="white"], [fill^="#fff"]) {
               <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9.2.3">
                 <p id="section-toc.1-1.9.2.3.1"><a href="#appendix-B.3" class="auto internal xref"></a><a href="#name-a3-sla-negotiation-for-gree" class="internal xref">A.3. SLA Negotiation for Green Services</a></p>
 </li>
-              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9.2.4">
-                <p id="section-toc.1-1.9.2.4.1"><a href="#appendix-B.4" class="auto internal xref"></a><a href="#name-a4-energy-aware-upf-and-edg" class="internal xref">A.4. Energy-Aware UPF and Edge Selection in 5G</a></p>
-</li>
-              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9.2.5">
-                <p id="section-toc.1-1.9.2.5.1"><a href="#appendix-B.5" class="auto internal xref"></a><a href="#name-a5-sustainability-reporting" class="internal xref">A.5. Sustainability Reporting Across Leased Backhaul and Network Sharing</a></p>
-</li>
             </ul>
 </li>
           <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10">
@@ -1273,7 +1267,7 @@ appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶<
 <p id="section-3-1">This document describes an API to query a network about several sustainability-related metrics for a given path. SHAPE extends PETRA as defined in "draft-petra-path-energy-api-02" (IETF GREEN WG) with additional sustainability metrics. It takes as input the source and destination of a path along with the traffic throughput between and returns energy information related to the traffic on the path. This is energy computed by the infrastructure that is dynamically part of the traffic path. The API is agnostic to the actual hops and underlying infrastructure that enables a path, which might change transparently to the API. This document only describes the API; the computation of the energy information to return is out of the scope of this document.<a href="#section-3-1" class="pilcrow">¶</a></p>
 <p id="section-3-2">The API can return a variety of energy-related parameters to provide a complete view of path sustainability. These include base efficiency and footprint indicators (e.g., watts per gigabit and carbon intensity), energy mix and renewable energy contributions, and overhead and operational characteristics (e.g., transmission losses, idle energy draw, cooling overheads, and the availability of low-power states such as sleep modes).<a href="#section-3-2" class="pilcrow">¶</a></p>
 <p id="section-3-3">In addition to point-in-time values, the API can expose temporal and assurance-oriented information, such as the variability of carbon intensity over a defined observation window, stability indices for sustainability behavior (e.g., Sustainability Stability Index), statistical measures of energy variability, anomaly signals, and indicators of confidence in the underlying data sources. Such metrics can help consumers distinguish persistent characteristics from transient fluctuations.<a href="#section-3-3" class="pilcrow">¶</a></p>
-<p id="section-3-4">Furthermore, the SHAPE's energy parameters complement ongoing work on green service intents [I-D.irtf-nmrg-ibn-usecases], enabling customers to express sustainability objectives such as energy consumption thresholds, renewable energy usage, and carbon intensity limits. SHAPE provides the underlying energy measurement interface necessary for providers to fulfill, assure, and report on these green intents. Moreover, by exposing detailed energy and carbon-related parameters, SHAPE can allow intent translation components to map green service objectives into network resource allocation and path selection decisions.<a href="#section-3-4" class="pilcrow">¶</a></p>
+<p id="section-3-4">Furthermore, the SHAPE's energy parameters complement ongoing work on green service intents <span>[<a href="#I-D.irtf-nmrg-ibn-usecases" class="cite xref">I-D.irtf-nmrg-ibn-usecases</a>]</span>, enabling customers to express sustainability objectives such as energy consumption thresholds, renewable energy usage, and carbon intensity limits. SHAPE provides the underlying energy measurement interface necessary for providers to fulfill, assure, and report on these green intents. Moreover, by exposing detailed energy and carbon-related parameters, SHAPE can allow intent translation components to map green service objectives into network resource allocation and path selection decisions.<a href="#section-3-4" class="pilcrow">¶</a></p>
 <div id="energy-information">
 <section id="section-3.1">
         <h3 id="name-energy-information">
@@ -1713,6 +1707,34 @@ module irtf-shape {
     }
   }
 
+  augment "/petra:energy/petra:query/petra:output/petra:result" {
+    description
+      "Additional status/error cases for PETRA query output to support
+       scenarios where energy data is unavailable or only partially
+       available along the resolved path.";
+
+    case energy-unavailable {
+      container energy-unavailable {
+        description
+          "The path was resolved but energy data is not available
+           for one or more segments. No watts-per-gigabit can be
+           returned. Corresponds to accuracy-unavailable in the
+           GREEN data-source-accuracy hierarchy.";
+      }
+    }
+
+    case partial-result {
+      container partial-result {
+        description
+          "Energy data is available for part of the path only.
+           The watts-per-gigabit returned covers the measurable
+           segments. The data-source-accuracy leaf SHOULD be set
+           to reflect the least accurate contributing measurement.";
+        uses energy-metrics-g;
+      }
+    }
+  }
+
   augment "/petra:energy/petra:query/petra:output/petra:result/petra:success" {
     description
       "Add SHAPE sustainability metrics to the successful PETRA query result.";
@@ -1832,8 +1854,12 @@ deployment practices. Implementations <span class="bcp14">MUST</span> consider t
 <span class="refAuthor">Bjorklund, M.</span> and <span class="refAuthor">L. Berger, Ed.</span>, <span class="refTitle">"YANG Tree Diagrams"</span>, <span class="seriesInfo">BCP 215</span>, <span class="seriesInfo">RFC 8340</span>, <span class="seriesInfo">DOI 10.17487/RFC8340</span>, <time datetime="2018-03" class="refDate">March 2018</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8340">https://www.rfc-editor.org/rfc/rfc8340</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="RFC8341">[RFC8341]</dt>
-      <dd>
+        <dd>
 <span class="refAuthor">Bierman, A.</span> and <span class="refAuthor">M. Bjorklund</span>, <span class="refTitle">"Network Configuration Access Control Model"</span>, <span class="seriesInfo">STD 91</span>, <span class="seriesInfo">RFC 8341</span>, <span class="seriesInfo">DOI 10.17487/RFC8341</span>, <time datetime="2018-03" class="refDate">March 2018</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8341">https://www.rfc-editor.org/rfc/rfc8341</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC9315">[RFC9315]</dt>
+      <dd>
+<span class="refAuthor">Clemm, A.</span>, <span class="refAuthor">Ciavaglia, L.</span>, <span class="refAuthor">Granville, L. Z.</span>, and <span class="refAuthor">J. Tantsura</span>, <span class="refTitle">"Intent-Based Networking - Concepts and Definitions"</span>, <span class="seriesInfo">RFC 9315</span>, <span class="seriesInfo">DOI 10.17487/RFC9315</span>, <time datetime="2022-10" class="refDate">October 2022</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9315">https://www.rfc-editor.org/rfc/rfc9315</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 </dl>
 </section>
@@ -1851,6 +1877,10 @@ deployment practices. Implementations <span class="bcp14">MUST</span> consider t
 <dt id="I-D.belmq-green-framework">[I-D.belmq-green-framework]</dt>
         <dd>
 <span class="refAuthor">Claise, B.</span>, <span class="refAuthor">Contreras, L. M.</span>, <span class="refAuthor">Lindblad, J.</span>, <span class="refAuthor">Palmero, M. P.</span>, <span class="refAuthor">Stephan, E.</span>, and <span class="refAuthor">Q. Wu</span>, <span class="refTitle">"Framework for Energy Efficiency Management"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-belmq-green-framework-10</span>, <time datetime="2026-02-08" class="refDate">8 February 2026</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-belmq-green-framework-10">https://datatracker.ietf.org/doc/html/draft-belmq-green-framework-10</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="I-D.irtf-nmrg-ibn-usecases">[I-D.irtf-nmrg-ibn-usecases]</dt>
+        <dd>
+<span class="refAuthor">Yao, K.</span>, <span class="refAuthor">Chen, D.</span>, <span class="refAuthor">Jeong, J. P.</span>, <span class="refAuthor">Wu, Q.</span>, <span class="refAuthor">Yang, C.</span>, <span class="refAuthor">Contreras, L. M.</span>, and <span class="refAuthor">G. Fioccola</span>, <span class="refTitle">"Use Cases and Practices for Intent-Based Networking"</span>, <span class="refContent">Work in Progress</span>, <span class="seriesInfo">Internet-Draft, draft-irtf-nmrg-ibn-usecases-02</span>, <time datetime="2025-11-03" class="refDate">3 November 2025</time>, <span>&lt;<a href="https://datatracker.ietf.org/doc/html/draft-irtf-nmrg-ibn-usecases-02">https://datatracker.ietf.org/doc/html/draft-irtf-nmrg-ibn-usecases-02</a>&gt;</span>. </dd>
 <dd class="break"></dd>
 <dt id="I-D.petra-green-api">[I-D.petra-green-api]</dt>
       <dd>
@@ -1902,25 +1932,7 @@ deployment practices. Implementations <span class="bcp14">MUST</span> consider t
 <a href="#name-a3-sla-negotiation-for-gree" class="section-name selfRef">A.3. SLA Negotiation for Green Services</a>
         </h3>
 <p id="appendix-B.3-1">Another use case for SHAPE could be the negotiation of green Service Level Agreements (gSLAs) between operators and enterprise customers. By exposing SHAPE-derived metrics such as renewable energy percentage, carbon intensity, or sustainability scores, providers can offer differentiated SLAs that explicitly include environmental targets. This enables customers to select network services not only based on performance guarantees, but also on their environmental footprint, for example requesting that at least 60% of traffic be carried over renewable-powered infrastructure. Such gSLAs empower customers to align their digital services with corporate sustainability goals and reporting requirements, while operators can use SHAPE as the trusted source of verifiable energy data.<a href="#appendix-B.3-1" class="pilcrow">¶</a></p>
-<p id="appendix-B.3-2">gSLAs can be negotiated using customer-expressed green intents that specify objectives such as maximum energy consumption, minimum energy efficiency, carbon emission limits, and renewable energy usage [I-D.irtf-nmrg-ibn-usecases]. SHAPE's metrics, including watts per gigabit, carbon intensity, and energy mix, provide essential measurements to translate these intents into network configurations and to monitor compliance during service operation. The lifecycle of green intents, encompassing fulfillment and assurance phases [RFC9315], can be supported by SHAPE through its capability to deliver real-time energy metrics for translation into network policies and subsequent monitoring and validation.<a href="#appendix-B.3-2" class="pilcrow">¶</a></p>
-</section>
-</div>
-<div id="a4-energy-aware-upf-and-edge-selection-in-5g">
-<section id="appendix-B.4">
-        <h3 id="name-a4-energy-aware-upf-and-edg">
-<a href="#name-a4-energy-aware-upf-and-edg" class="section-name selfRef">A.4. Energy-Aware UPF and Edge Selection in 5G</a>
-        </h3>
-<p id="appendix-B.4-1">Mobile Network Operators (MNOs) often have choices regarding the placement of user-plane functions (UPFs), traffic break-out points, and Multi-access Edge Computing (MEC) sites. These choices influence not only latency and capacity, but also the energy and carbon footprint of the end-to-end user-plane path (e.g., from a radio site or aggregation point towards a selected UPF/MEC and onwards to a data network).<a href="#appendix-B.4-1" class="pilcrow">¶</a></p>
-<p id="appendix-B.4-2">In this context, SHAPE can be used by the 5G slice orchestrator, policy controller, or transport controller to query candidate paths associated with alternative UPF/MEC selections and compare sustainability metrics (e.g., watts-per-gigabit, carbon intensity, energy mix, and temporal carbon variability over a defined observation window). This enables energy-aware traffic steering, selection of greener break-out points when service constraints allow it, and assurance of sustainability objectives for enterprise slices.<a href="#appendix-B.4-2" class="pilcrow">¶</a></p>
-</section>
-</div>
-<div id="a5-sustainability-reporting-across-leased-backhaul-and-network-sharing">
-<section id="appendix-B.5">
-        <h3 id="name-a5-sustainability-reporting">
-<a href="#name-a5-sustainability-reporting" class="section-name selfRef">A.5. Sustainability Reporting Across Leased Backhaul and Network Sharing</a>
-        </h3>
-<p id="appendix-B.5-1">MNOs frequently rely on third-party transport (e.g., leased lines or wholesale backhaul) and may participate in network sharing arrangements where different administrative domains contribute to the effective end-to-end service path. This makes it difficult to obtain consistent and comparable sustainability metrics for internal carbon accounting, regulatory reporting, or customer-facing sustainability statements.<a href="#appendix-B.5-1" class="pilcrow">¶</a></p>
-<p id="appendix-B.5-2">SHAPE's recursive usage model can support these scenarios by allowing an MNO to obtain per-segment sustainability metrics from each contributing domain (subject to authorization and policy) and then aggregate them for an overall view of the service path. When combined with appropriate safeguards against double counting (Section "Recursive Usage"), this enables a more robust, auditable decomposition of energy and carbon contributions across shared or outsourced infrastructure.<a href="#appendix-B.5-2" class="pilcrow">¶</a></p>
+<p id="appendix-B.3-2">gSLAs can be negotiated using customer-expressed green intents that specify objectives such as maximum energy consumption, minimum energy efficiency, carbon emission limits, and renewable energy usage <span>[<a href="#I-D.irtf-nmrg-ibn-usecases" class="cite xref">I-D.irtf-nmrg-ibn-usecases</a>]</span>. SHAPE's metrics, including watts per gigabit, carbon intensity, and energy mix, provide essential measurements to translate these intents into network configurations and to monitor compliance during service operation. The lifecycle of green intents, encompassing fulfillment and assurance phases <span>[<a href="#RFC9315" class="cite xref">RFC9315</a>]</span>, can be supported by SHAPE through its capability to deliver real-time energy metrics for translation into network policies and subsequent monitoring and validation.<a href="#appendix-B.3-2" class="pilcrow">¶</a></p>
 </section>
 </div>
 </section>
