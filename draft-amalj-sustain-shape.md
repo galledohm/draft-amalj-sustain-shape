@@ -499,6 +499,34 @@ module irtf-shape {
     }
   }
 
+  augment "/petra:energy/petra:query/petra:output/petra:result" {
+    description
+      "Additional status/error cases for PETRA query output to support
+       scenarios where energy data is unavailable or only partially
+       available along the resolved path.";
+
+    case energy-unavailable {
+      container energy-unavailable {
+        description
+          "The path was resolved but energy data is not available
+           for one or more segments. No watts-per-gigabit can be
+           returned. Corresponds to accuracy-unavailable in the
+           GREEN data-source-accuracy hierarchy.";
+      }
+    }
+
+    case partial-result {
+      container partial-result {
+        description
+          "Energy data is available for part of the path only.
+           The watts-per-gigabit returned covers the measurable
+           segments. The data-source-accuracy leaf SHOULD be set
+           to reflect the least accurate contributing measurement.";
+        uses energy-metrics-g;
+      }
+    }
+  }
+
   augment "/petra:energy/petra:query/petra:output/petra:result/petra:success" {
     description
       "Add SHAPE sustainability metrics to the successful PETRA query result.";
@@ -579,20 +607,6 @@ Leveraging SHAPE API for multilayer L3-L1 collection use case enhances energy ma
 Another use case for SHAPE could be the negotiation of green Service Level Agreements (gSLAs) between operators and enterprise customers. By exposing SHAPE-derived metrics such as renewable energy percentage, carbon intensity, or sustainability scores, providers can offer differentiated SLAs that explicitly include environmental targets. This enables customers to select network services not only based on performance guarantees, but also on their environmental footprint, for example requesting that at least 60% of traffic be carried over renewable-powered infrastructure. Such gSLAs empower customers to align their digital services with corporate sustainability goals and reporting requirements, while operators can use SHAPE as the trusted source of verifiable energy data.
 
 gSLAs can be negotiated using customer-expressed green intents that specify objectives such as maximum energy consumption, minimum energy efficiency, carbon emission limits, and renewable energy usage [I-D.irtf-nmrg-ibn-usecases]. SHAPE's metrics, including watts per gigabit, carbon intensity, and energy mix, provide essential measurements to translate these intents into network configurations and to monitor compliance during service operation. The lifecycle of green intents, encompassing fulfillment and assurance phases [RFC9315], can be supported by SHAPE through its capability to deliver real-time energy metrics for translation into network policies and subsequent monitoring and validation.
-
-## A.4. Energy-Aware UPF and Edge Selection in 5G
-{:numbered="false"}
-
-Mobile Network Operators (MNOs) often have choices regarding the placement of user-plane functions (UPFs), traffic break-out points, and Multi-access Edge Computing (MEC) sites. These choices influence not only latency and capacity, but also the energy and carbon footprint of the end-to-end user-plane path (e.g., from a radio site or aggregation point towards a selected UPF/MEC and onwards to a data network).
-
-In this context, SHAPE can be used by the 5G slice orchestrator, policy controller, or transport controller to query candidate paths associated with alternative UPF/MEC selections and compare sustainability metrics (e.g., watts-per-gigabit, carbon intensity, energy mix, and temporal carbon variability over a defined observation window). This enables energy-aware traffic steering, selection of greener break-out points when service constraints allow it, and assurance of sustainability objectives for enterprise slices.
-
-## A.5. Sustainability Reporting Across Leased Backhaul and Network Sharing
-{:numbered="false"}
-
-MNOs frequently rely on third-party transport (e.g., leased lines or wholesale backhaul) and may participate in network sharing arrangements where different administrative domains contribute to the effective end-to-end service path. This makes it difficult to obtain consistent and comparable sustainability metrics for internal carbon accounting, regulatory reporting, or customer-facing sustainability statements.
-
-SHAPE's recursive usage model can support these scenarios by allowing an MNO to obtain per-segment sustainability metrics from each contributing domain (subject to authorization and policy) and then aggregate them for an overall view of the service path. When combined with appropriate safeguards against double counting (Section "Recursive Usage"), this enables a more robust, auditable decomposition of energy and carbon contributions across shared or outsourced infrastructure.
 
 # Appendix B. Requirements for Energy Efficiency Management
 {:numbered="false"}
