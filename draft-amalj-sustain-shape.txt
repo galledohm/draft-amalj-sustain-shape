@@ -375,9 +375,10 @@ Table of Contents
      }
 
      organization
-       "";
+       "IRTF SUSTAIN Research Group";
      contact
-       "";
+       "RG Web:   <https://datatracker.ietf.org/rg/sustain/about/>
+        RG List:  <sustain@irtf.org>";
      description
        "Initial YANG module for SHAPE API, v1.0.0
 
@@ -791,6 +792,13 @@ Table of Contents
               <https://www.rfc-editor.org/rfc/rfc8341>.
 
 7.2.  Informative References
+
+   [I-D.bcmj-green-power-and-energy-yang]
+              Claise, B., Chen, G., Palmero, M. P., and J. Lindblad,
+              "Power and Energy YANG Module", Work in Progress,
+              Internet-Draft, draft-bcmj-green-power-and-energy-yang-02,
+              9 February 2026, <https://datatracker.ietf.org/doc/html/
+              draft-bcmj-green-power-and-energy-yang-02>.
 
    [I-D.belmq-green-framework]
               Claise, B., Contreras, L. M., Lindblad, J., Palmero, M.
