@@ -5,7 +5,7 @@
 Proposed Sustainability and the Internet Proposed Research GroupA. Gallego Sanchez
 Internet-Draft                                          Deutsche Telekom
 Intended status: Informational                        A. Rodriguez-Natal
-Expires: 30 August 2026                                            Cisco
+Expires: 31 August 2026                                            Cisco
                                                          L. M. Contreras
                                                               Telefonica
                                                               M. Palmero
@@ -90,6 +90,9 @@ Table of Contents
      A.1.  SD-WAN
      A.2.  Multilayer Energy Management
      A.3.  SLA Negotiation for Green Services
+     A.4.  Energy-Aware UPF and Edge Selection in 5G
+     A.5.  Sustainability Reporting Across Leased Backhaul and Network
+           Sharing
    Appendix B.  Requirements for Energy Efficiency Management
    Authors' Addresses
 
@@ -143,16 +146,16 @@ Table of Contents
 
    This document describes an API to query a network about several
    sustainability-related metrics for a given path.  SHAPE extends PETRA
-   as defined in "draft-petra-path-energy-api-02" (IETF GREEN WG) with
-   additional sustainability metrics.  It takes as input the source and
-   destination of a path along with the traffic throughput between and
-   returns energy information related to the traffic on the path.  This
-   is energy computed by the infrastructure that is dynamically part of
-   the traffic path.  The API is agnostic to the actual hops and
-   underlying infrastructure that enables a path, which might change
-   transparently to the API.  This document only describes the API; the
-   computation of the energy information to return is out of the scope
-   of this document.
+   as defined in [I-D.petra-green-api] with additional sustainability
+   metrics.  It takes as input the source and destination of a path
+   along with the traffic throughput between and returns energy
+   information related to the traffic on the path.  This is energy
+   computed by the infrastructure that is dynamically part of the
+   traffic path.  The API is agnostic to the actual hops and underlying
+   infrastructure that enables a path, which might change transparently
+   to the API.  This document only describes the API; the computation of
+   the energy information to return is out of the scope of this
+   document.
 
    The API can return a variety of energy-related parameters to provide
    a complete view of path sustainability.  These include base
@@ -955,6 +958,45 @@ A.3.  SLA Negotiation for Green Services
    [RFC9315], can be supported by SHAPE through its capability to
    deliver real-time energy metrics for translation into network
    policies and subsequent monitoring and validation.
+
+A.4.  Energy-Aware UPF and Edge Selection in 5G
+
+   Mobile Network Operators (MNOs) often have choices regarding the
+   placement of user-plane functions (UPFs), traffic break-out points,
+   and Multi-access Edge Computing (MEC) sites.  These choices influence
+   not only latency and capacity, but also the energy and carbon
+   footprint of the end-to-end user-plane path (e.g., from a radio site
+   or aggregation point towards a selected UPF/MEC and onwards to a data
+   network).
+
+   In this context, SHAPE can be used by the 5G slice orchestrator,
+   policy controller, or transport controller to query candidate paths
+   associated with alternative UPF/MEC selections and compare
+   sustainability metrics (e.g., watts-per-gigabit, carbon intensity,
+   energy mix, and temporal carbon variability over a defined
+   observation window).  This enables energy-aware traffic steering,
+   selection of greener break-out points when service constraints allow
+   it, and assurance of sustainability objectives for enterprise slices.
+
+A.5.  Sustainability Reporting Across Leased Backhaul and Network
+Sharing
+
+   MNOs frequently rely on third-party transport (e.g., leased lines or
+   wholesale backhaul) and may participate in network sharing
+   arrangements where different administrative domains contribute to the
+   effective end-to-end service path.  This makes it difficult to obtain
+   consistent and comparable sustainability metrics for internal carbon
+   accounting, regulatory reporting, or customer-facing sustainability
+   statements.
+
+   SHAPE's recursive usage model can support these scenarios by allowing
+   an MNO to obtain per-segment sustainability metrics from each
+   contributing domain (subject to authorization and policy) and then
+   aggregate them for an overall view of the service path.  When
+   combined with appropriate safeguards against double counting
+   (Section "Recursive Usage"), this enables a more robust, auditable
+   decomposition of energy and carbon contributions across shared or
+   outsourced infrastructure.
 
 Appendix B.  Requirements for Energy Efficiency Management
 
