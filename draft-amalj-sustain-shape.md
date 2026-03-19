@@ -526,17 +526,6 @@ module irtf-shape {
            GREEN data-source-accuracy hierarchy.";
       }
     }
-
-    case partial-result {
-      container partial-result {
-        description
-          "Energy data is available for part of the path only.
-           The watts-per-gigabit returned covers the measurable
-           segments. The data-source-accuracy leaf SHOULD be set
-           to reflect the least accurate contributing measurement.";
-        uses energy-metrics-g;
-      }
-    }
   }
 
   augment "/petra:energy/petra:query/petra:output/petra:result/petra:success" {
