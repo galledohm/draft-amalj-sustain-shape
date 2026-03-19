@@ -28,35 +28,35 @@ venue:
 
 author:
 
- -
+-
     ins: A. Gallego Sanchez
     fullname: Adrian Gallego Sanchez
     organization: Deutsche Telekom
     city: Guadalajara
     country: Spain
     email: ADRIAN.GALLEGO-SANCHEZ@t-systems.com
- -
+-
     ins: A. Rodriguez-Natal
     fullname: Alberto Rodriguez-Natal
     organization: Cisco
     city: Madrid
     country: Spain
     email: natal@cisco.com
- -
+-
     ins: L. M. Contreras
     fullname: Luis M. Contreras
     organization: Telefonica
     city: Madrid
     country: Spain
     email: luismiguel.contrerasmurillo@telefonica.com
- -
+-
     ins: M. Palmero
     fullname: Marisol Palmero
     organization:
     city: Toledo
     country: Spain
     email: marisol.ietf@gmail.com
- -
+-
     ins: J. Lindblad
     fullname: Jan Lindblad
     organization: All For Eco
@@ -86,7 +86,6 @@ informative:
 --- abstract
 
 This document describes an API to query a network regarding its Energy Traffic Ratio and other sustainability-related metrics for a given network path.
-
 
 --- middle
 
@@ -183,7 +182,6 @@ Network API   .         : Network Configuration :         .
     | Element |   | Element | | Element |   | Element |    | Element |
      ---------     ---------   ---------     ---------      ---------
 ~~~~
-
 
 # YANG Module
 
@@ -549,29 +547,28 @@ module irtf-shape {
 SHAPE queries and responses can reveal operational and business-sensitive information (e.g., energy efficiency, carbon footprint, facility overheads, and potentially location- or time-correlated behavior). SHAPE API MAY be exposed via management protocols such as NETCONF [RFC6241] and RESTCONF [RFC8040] and, therefore, it inherits their security properties and
 deployment practices. Implementations MUST consider the following aspects:
 
-* **Secure transport:** Implementations MUST ensure confidentiality and integrity protection for SHAPE exchanges (i.e., by using secure transports mandated by the underlying management protocol). Where RESTCONF is used, HTTPS is REQUIRED by [RFC8040].
+- **Secure transport:** Implementations MUST ensure confidentiality and integrity protection for SHAPE exchanges (i.e., by using secure transports mandated by the underlying management protocol). Where RESTCONF is used, HTTPS is REQUIRED by [RFC8040].
 
-* **Authentication and authorization:** SHAPE servers MUST authenticate clients and MUST enforce authorization on a per-request basis. Authorization SHOULD be granular (e.g., via access-control mechanisms such as NACM [RFC8341]) and cover:
+- **Authentication and authorization:** SHAPE servers MUST authenticate clients and MUST enforce authorization on a per-request basis. Authorization SHOULD be granular (e.g., via access-control mechanisms such as NACM [RFC8341]) and cover:
   (i) which path endpoints can be queried,
   (ii) which metrics can be returned (including SHAPE augmentations), and
   (iii) which precision/granularity is permitted.
 
-* **Information disclosure controls:** Returned sustainability data (i.e., energy mix, PUE, cooling-energy ratio, or temporal variability) can be  used to infer facility characteristics, topology, utilization patterns, or operational policies. Servers SHOULD support policy controls that reduce disclosure risk (e.g., aggregation, reduced precision, or suppressing specific metrics) for less-privileged clients.
+- **Information disclosure controls:** Returned sustainability data (i.e., energy mix, PUE, cooling-energy ratio, or temporal variability) can be  used to infer facility characteristics, topology, utilization patterns, or operational policies. Servers SHOULD support policy controls that reduce disclosure risk (e.g., aggregation, reduced precision, or suppressing specific metrics) for less-privileged clients.
 
-* **Input validation and bounds:** Servers MUST validate all inputs (i.e., including path identifiers, throughput, measurement-interval, and the recursive flag) and enforce reasonable bounds to prevent expensive computations and state growth. In particular, servers SHOULD enforce upper limits on observation-window durations, recursion depth/scope, and the amount of per-request data returned.
+- **Input validation and bounds:** Servers MUST validate all inputs (i.e., including path identifiers, throughput, measurement-interval, and the recursive flag) and enforce reasonable bounds to prevent expensive computations and state growth. In particular, servers SHOULD enforce upper limits on observation-window durations, recursion depth/scope, and the amount of per-request data returned.
 
-* **Denial-of-service resilience:** SHAPE computations may involve multi-device sampling, aggregation, and historical lookups. Servers SHOULD implement DoS mitigations such as rate limiting, per-client quotas, request prioritization, and caching of commonly requested results. If requests are rejected due to overload or policy, servers SHOULD return explicit errors rather than silently ignoring requests.
+- **Denial-of-service resilience:** SHAPE computations may involve multi-device sampling, aggregation, and historical lookups. Servers SHOULD implement DoS mitigations such as rate limiting, per-client quotas, request prioritization, and caching of commonly requested results. If requests are rejected due to overload or policy, servers SHOULD return explicit errors rather than silently ignoring requests.
 
-* **Multi-domain and recursive operation:** When the query is expanded recursively across administrative domains, each domain MUST enforce its own local policy and MUST NOT assume that ustream requests are safe. Implementations SHOULD ensure that recursive expansion does not leak credentials, does not bypass local authorization, and does not create amplification (e.g., fan-out storms). Responses obtained from external domains SHOULD be treated as untrusted inputs.
+- **Multi-domain and recursive operation:** When the query is expanded recursively across administrative domains, each domain MUST enforce its own local policy and MUST NOT assume that ustream requests are safe. Implementations SHOULD ensure that recursive expansion does not leak credentials, does not bypass local authorization, and does not create amplification (e.g., fan-out storms). Responses obtained from external domains SHOULD be treated as untrusted inputs.
 
-* **Integrity of measurement chain:** SHAPE metrics can be used for automated decisions (e.g., policy enforcement or gSLAs). Implementations SHOULD protect the integrity of the measurement pipeline (collection, aggregation, and publication) and SHOULD provide operational mechanisms such as audit logs and provenance tracking to help detect tampering or misconfiguration.
+- **Integrity of measurement chain:** SHAPE metrics can be used for automated decisions (e.g., policy enforcement or gSLAs). Implementations SHOULD protect the integrity of the measurement pipeline (collection, aggregation, and publication) and SHOULD provide operational mechanisms such as audit logs and provenance tracking to help detect tampering or misconfiguration.
 
-* **Privacy:** Sustainability metrics may correlate with customer traffic patterns or reveal information about customer locations and activity. Implementations SHOULD minimize retention of per-customer/per-flow data and SHOULD protect logs and telemetry derived from SHAPE requests.
+- **Privacy:** Sustainability metrics may correlate with customer traffic patterns or reveal information about customer locations and activity. Implementations SHOULD minimize retention of per-customer/per-flow data and SHOULD protect logs and telemetry derived from SHAPE requests.
 
 # IANA Considerations
 
 This document has no IANA actions.
-
 
 --- back
 
@@ -677,4 +674,5 @@ The document Framework for Energy Efficiency Management {{I-D.ietf-green-framewo
  | +---------+  +-----------+  +----------------+  +----------------+ |
  +--------------------------------------------------------------------+
 ~~~~
+
 {: #shape-framework title="SHAPE Integration in Energy Management Framework"}
