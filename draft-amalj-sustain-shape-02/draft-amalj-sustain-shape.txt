@@ -1,0 +1,1089 @@
+
+
+
+
+Proposed Sustainability and the Internet Proposed Research GroupA. Gallego Sanchez
+Internet-Draft                                          Deutsche Telekom
+Intended status: Informational                        A. Rodriguez-Natal
+Expires: 1 September 2026                                          Cisco
+                                                         L. M. Contreras
+                                                              Telefonica
+                                                              M. Palmero
+                                                                        
+                                                             J. Lindblad
+                                                             All For Eco
+                                                           February 2026
+
+
+     Sustainability holistic API for Path Energy Evaluation (SHAPE)
+                    draft-amalj-sustain-shape-latest
+
+Abstract
+
+   This document describes an API to query a network regarding its
+   Energy Traffic Ratio and other sustainability-related metrics for a
+   given network path.
+
+About This Document
+
+   This note is to be removed before publishing as an RFC.
+
+   The latest revision of this draft can be found at
+   https://galledohm.github.io/draft-amalj-sustain-shape/draft-amalj-
+   sustain-shape.html.  Status information for this document may be
+   found at https://datatracker.ietf.org/doc/draft-amalj-sustain-shape/.
+
+   Discussion of this document takes place on the Proposed
+   Sustainability and the Internet Proposed Research Group Research
+   Group mailing list (mailto:sustain@irtf.org), which is archived at
+   https://mailarchive.ietf.org/arch/browse/sustain/.  Subscribe at
+   https://www.ietf.org/mailman/listinfo/sustain/.
+
+   Source for this draft and an issue tracker can be found at
+   https://github.com/galledohm/draft-amalj-sustain-shape.
+
+Status of This Memo
+
+   This Internet-Draft is submitted in full conformance with the
+   provisions of BCP 78 and BCP 79.
+
+   Internet-Drafts are working documents of the Internet Engineering
+   Task Force (IETF).  Note that other groups may also distribute
+   working documents as Internet-Drafts.  The list of current Internet-
+   Drafts is at https://datatracker.ietf.org/drafts/current/.
+
+   Internet-Drafts are draft documents valid for a maximum of six months
+   and may be updated, replaced, or obsoleted by other documents at any
+   time.  It is inappropriate to use Internet-Drafts as reference
+   material or to cite them other than as "work in progress."
+
+   This Internet-Draft will expire on 5 August 2026.
+
+Copyright Notice
+
+   Copyright (c) 2026 IETF Trust and the persons identified as the
+   document authors.  All rights reserved.
+
+   This document is subject to BCP 78 and the IETF Trust's Legal
+   Provisions Relating to IETF Documents (https://trustee.ietf.org/
+   license-info) in effect on the date of publication of this document.
+   Please review these documents carefully, as they describe your rights
+   and restrictions with respect to this document.
+
+Table of Contents
+
+   1.  Introduction
+   2.  Conventions and Definitions
+   3.  Sustainability holistic API for Path Energy Evaluation (SHAPE)
+     3.1.  Energy Information
+     3.2.  Recursive Usage
+   4.  YANG Module
+     4.1.  Module Structure
+     4.2.  Module Definition
+   5.  Security Considerations
+   6.  IANA Considerations
+   7.  References
+     7.1.  Normative References
+     7.2.  Informative References
+   Acknowledgments
+   Appendix A.  Use Cases
+     A.1.  SD-WAN
+     A.2.  Multilayer Energy Management
+     A.3.  SLA Negotiation for Green Services
+     A.4.  Energy-Aware UPF and Edge Selection in 5G
+     A.5.  Sustainability Reporting Across Leased Backhaul and Network
+           Sharing
+   Appendix B.  Requirements for Energy Efficiency Management
+   Authors' Addresses
+
+1.  Introduction
+
+   Sustainability is becoming one of the major societal goals for the
+   next decade, and networks are one of the major consumers of energy
+   nowadays.  Sustainability of network services is thus one of the
+   forefronts of innovation and action from network service
+   stakeholders, involving manufacturers, operators and customers.  In
+   this line, there is a shared goal of achieving better energy and
+   carbon awareness.
+
+   As with any other network metric, the energy traffic ratio could be
+   collected from the underlying network infrastructure.  However, there
+   is not a common or single definition of energy and sustainability
+   metrics towards network consumers so that they can be uniformly
+   reported, particularly in heterogeneous network scenarios.  This
+   document introduces an API to query networks about the Energy Traffic
+   Ratio.
+
+   Beyond simple efficiency indicators such as Watts per Gigabit per
+   second per second, network stakeholders are increasingly interested
+   in richer sustainability information, such as carbon intensity,
+   energy mix, power usage effectiveness (PUE), idle energy draw,
+   transmission losses, and cooling overheads (e.g., Cooling Energy
+   Ratio).  In addition, operational and temporal aspects matter: the
+   ability of a path to spend time in low-power states (Sleep-mode
+   Availability), the variability of carbon intensity over time
+   (Temporal Carbon Variability), and the stability of reported
+   sustainability behavior (e.g., Sustainability Stability Index).
+
+   Finally, sustainability data is increasingly used for automated
+   decision-making and assurance (e.g., in green SLAs), which introduces
+   a need for indicators of data quality and robustness.  Metrics such
+   as variance of energy consumption (VEC), anomaly detection signals
+   (e.g., Anomaly Factor), and a trustworthiness score of data sources
+   (TDS) help distinguish persistent characteristics from transient
+   conditions and support more reliable sustainability reporting and
+   policy enforcement.
+
+2.  Conventions and Definitions
+
+   The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT",
+   "SHOULD", "SHOULD NOT", "RECOMMENDED", "NOT RECOMMENDED", "MAY", and
+   "OPTIONAL" in this document are to be interpreted as described in
+   BCP 14 [RFC2119] [RFC8174] when, and only when, they appear in all
+   capitals, as shown here.
+
+3.  Sustainability holistic API for Path Energy Evaluation (SHAPE)
+
+   This document describes an API to query a network about several
+   sustainability-related metrics for a given path.  SHAPE extends PETRA
+   as defined in [I-D.petra-green-api] with additional sustainability
+   metrics.  It takes as input the source and destination of a path
+   along with the traffic throughput between and returns energy
+   information related to the traffic on the path.  This is energy
+   computed by the infrastructure that is dynamically part of the
+   traffic path.  The API is agnostic to the actual hops and underlying
+   infrastructure that enables a path, which might change transparently
+   to the API.  This document only describes the API; the computation of
+   the energy information to return is out of the scope of this
+   document.
+
+   The API can return a variety of energy-related parameters to provide
+   a complete view of path sustainability.  These include base
+   efficiency and footprint indicators (e.g., Watts per Gigabit per
+   second per second and carbon intensity), energy mix and renewable
+   energy contributions, and overhead and operational characteristics
+   (e.g., transmission losses, idle energy draw, cooling overheads, and
+   the availability of low-power states such as sleep modes).
+
+   In addition to point-in-time values, the API can expose temporal and
+   assurance-oriented information, such as the variability of carbon
+   intensity over a defined observation window, stability indices for
+   sustainability behavior (e.g., Sustainability Stability Index),
+   statistical measures of energy variability, anomaly signals, and
+   indicators of confidence in the underlying data sources.  Such
+   metrics can help consumers distinguish persistent characteristics
+   from transient fluctuations.
+
+   Furthermore, the SHAPE's energy parameters complement ongoing work on
+   green service intents [I-D.irtf-nmrg-ibn-usecases], enabling
+   customers to express sustainability objectives such as energy
+   consumption thresholds, renewable energy usage, and carbon intensity
+   limits.  SHAPE provides the underlying energy measurement interface
+   necessary for providers to fulfill, assure, and report on these green
+   intents.  Moreover, by exposing detailed energy and carbon-related
+   parameters, SHAPE can allow intent translation components to map
+   green service objectives into network resource allocation and path
+   selection decisions.
+
+3.1.  Energy Information
+
+   This API allows to return a number of energy attributes associated
+   with the path and the traffic.  Currently the parameters that could
+   be returned as energy information as part of the query are:
+
+   *  *Watts per Gigabit per second:* (Inherited from PETRA) How many
+      Watts are consumed per Gigabit of traffic traversing the path.
+
+   *  *Carbon Intensity:* How much carbon emissions are generated as a
+      consequence of the energy consumed.
+
+   *  *Energy Mix (%):* Percentage of energy used in the path that comes
+      from different energy sources (e.g., solar, wind, biomass,
+      nuclear, fossil fuel).
+
+   *  *Greenness Degree (%):* The aggregated percentage of energy
+      consumed on the path that comes from renewable sources.  Useful to
+      rank and select paths based on renewable energy usage.
+
+   *  *Sustainability Score (0–1):* Composite metric combining greenness
+      degree and energy efficiency (Watts per Gigabit per second),
+      calculated as (Greenness/100) × 1/(1 + Watts per Gigabit per
+      second).  Higher values indicate more sustainable, efficient
+      paths.
+
+   *  *Power Usage Effectiveness (PUE):* The ratio of total facility
+      power consumption to the power consumption of networking/IT
+      equipment.
+
+   *  *Transmission Loss (%):* The percentage of energy lost along the
+      path due to transmission inefficiencies.
+
+   *  *Idle Energy Draw (Watts):* The amount of energy consumed by the
+      path infrastructure when idle or under negligible load.
+
+   *  *Temporal Carbon Variability (TCV) (gCO2/kWh over period):*
+      Quantifies how much the carbon intensity of the electricity
+      powering the network path fluctuates over a defined time window
+      (e.g., 15 minutes, 1 hour, 24 hours).  It reflects the stability
+      or volatility of the renewable/fossil mix affecting the path
+      during that period.  A low TCV indicates predictable carbon
+      characteristics; a high TCV suggests inconsistent or rapidly
+      changing energy sources.
+
+   *  *Sleep-mode Availability (%):* Measures the percentage of time
+      during which network devices or segments along a path support and
+      can enter low-power or idle energy-saving modes.  It can also
+      reflect real usage of these modes depending on the operator’s
+      instrumentation (when supported or/and instrumented).
+
+   *  *Sustainability Stability Index (SSI) (0–1):* Quantifies the
+      stability over time of a sustainability metric (i.e., carbon
+      intensity or greenness degree), it is particularly relevant for
+      gSLAs, where predictable sustainability performance matters as
+      much as absolute values.  Values close to 1 indicate highly stable
+      behavior.
+
+   *  *Trustworthiness Score of Data Sources (TDS) (0–1):* characterizes
+      how reliable the API’s sustainability-related data is, based on
+      provenance, measurement quality, freshness, and cross-source
+      consistency.  Higher values indicate stronger confidence in the
+      reported data.
+
+   *  *Variance of Energy Consumption (VEC) (W^2):* VEC measures how
+      much the energy use of the path fluctuates during an observation
+      window.  It helps detect energy instability, noisy equipment, or
+      poorly tuned power-management algorithms.  High VEC indicates
+      unstable or erratic energy usage; low VEC indicates consistent
+      energy behavior.
+
+   *  *Anomaly Factor (AF) (z-factor):* Identifies whether the energy
+      usage of a path at a given moment deviates significantly from its
+      historical baseline or expected statistical behavior, normalized
+      by standard deviation.  AF < 1 indicates normal behavior, AF
+      around 2 indicates elevated deviation, and AF > 3 indicates an
+      anomaly (classic 3-sigma rule).
+
+   *  *Cooling Energy Ratio (CER) (%):* Quantifies the share of total
+      energy consumed by a path or segment that is attributable to
+      cooling rather than networking/IT workload.  It parallels PUE but
+      is per-path or per-segment, not facility-wide.  Higher values
+      indicate higher cooling overhead relative to useful forwarding
+      energy.
+
+   These metrics are OPTIONAL, and an implementation MAY support a
+   subset depending on available measurement capabilities.
+
+3.2.  Recursive Usage
+
+   The API is envisioned in such a way that could be used recursively.
+   That means, subpaths could report their energy consumption using
+   SHAPE and such energy consumption could be aggregated and reported
+   for the overall path also using SHAPE.
+
+   Similarly, this API could be (recursively) used to provide energy
+   information according to the definition of Service Models in an SDN
+   context as described in [RFC8309].  In that case, using Figure 3 in
+   [RFC8309] as reference, SHAPE could be used between the Controller(s)
+   and the Network Orchestrator(s), between the Network Orchestrator(s)
+   and the Service Orchestrator, and between the Service Orchestrator
+   and the Customer(s).
+
+   While considering recursive usage, the aspect of double-counting
+   shall also be taken into consideration.  Double counting refers to
+   the fact of counting more than once the same energy consumed.
+   Organizations using SHAPE in a recursive manner need to take
+   appropriate measures to ensure no double-counting occurs across
+   recursive calls to the API.
+
+                                                    Customer
+                               ------------------   Service  ----------
+                              |                  |  Model   |          |
+   SHAPE as                   |     Service      |<-------->| Customer |
+   Customer Service           |   Orchestrator   |    (a)   |          |
+   related API                |                  |           ----------
+                               ------------------
+                                  .          .
+   ##########################    .            .        (b)   -----------
+                                . (b)          .      ......|Application|
+                               .                .     :     |  BSS/OSS  |
+   SHAPE as                   .                  .    :      -----------
+   Service related API       .  Service Delivery  .   :
+                            .       Model          .  :
+                    ------------------    ------------------
+                   |                  |  |                  |
+   #############   |     Network      |  |     Network      |
+                   |   Orchestrator   |  |   Orchestrator   |
+                   |                  |  |                  |
+                   .------------------    ------------------.
+   SHAPE as               .         :                       :        .
+   Network API   .         : Network Configuration :         .
+               .            :        Model          :         .
+         ------------     ------------     ------------    ------------
+        |            |   |            |   |            |  |            |
+   ###  | Controller |   | Controller |   | Controller |  | Controller |
+        |            |   |            |   |            |  |            |
+         ------------     ------------     ------------    ------------
+            :              .       .                 :            :
+            :             .         .      Device    :            :
+            :            .           . Configuration :            :
+            :            .           .     Model     :            :
+        ---------     ---------   ---------     ---------      ---------
+       | Network |   | Network | | Network |   | Network |    | Network |
+       | Element |   | Element | | Element |   | Element |    | Element |
+        ---------     ---------   ---------     ---------      ---------
+
+4.  YANG Module
+
+   SHAPE is specified as an augmentation to the PETRA YANG module
+   defined in [I-D.petra-green-api].  This section provides an example
+   YANG module, as per the YANG specification [RFC7950], that imports
+   PETRA and augments it with additional inputs and metrics.
+
+4.1.  Module Structure
+
+   module: irtf-shape
+     +--imports ietf-petra
+
+     augment /petra:energy/petra:query/petra:input:
+       +---w measurement-interval?    uint32
+       +---w recursive?               boolean
+
+     augment /petra:energy/petra:query/petra:output/petra:result/petra:success:
+       +--ro shape-metrics
+          +--ro carbon-intensity?                 uint32
+          +--ro energy-mix*                       -> list of sources and percentages
+          +--ro greenness-degree?                 decimal64
+          +--ro sustainability-score?             decimal64
+          +--ro pue?                              decimal64
+          +--ro transmission-loss?                decimal64
+          +--ro idle-watts?                       decimal64
+          +--ro temporal-carbon-variability?      decimal64
+          +--ro sleep-mode-availability?          decimal64
+          +--ro sustainability-stability-index?   decimal64
+          +--ro trustworthiness-score?            decimal64
+          +--ro variance-energy-consumption?      decimal64
+          +--ro anomaly-factor?                   decimal64
+          +--ro cooling-energy-ratio?             decimal64
+
+4.2.  Module Definition
+
+   module irtf-shape {
+     yang-version 1.1;
+     namespace "urn:ietf:params:xml:ns:yang:irtf-shape";
+     prefix shape;
+
+     import ietf-petra {
+       prefix petra;
+     }
+
+     organization
+       "IRTF SUSTAIN Research Group";
+     contact
+       "RG Web:   <https://datatracker.ietf.org/rg/sustain/about/>
+        RG List:  <sustain@irtf.org>";
+     description
+       "Initial YANG module for SHAPE API, v1.0.0
+
+       SHAPE extends the PETRA YANG module ('draft-petra-path-energy-api')
+       with additional optional sustainability-related metrics and, where
+       needed, additional input parameters to qualify observation windows.
+
+       Copyright (c) 2026 IETF Trust and the persons identified as
+       authors of the code. All rights reserved.
+
+       Redistribution and use in source and binary forms, with or
+       without modification, is permitted pursuant to, and subject to
+       the license terms contained in, the Revised BSD License set
+       forth in Section 4.c of the IETF Trust's Legal Provisions
+       Relating to IETF Documents
+       (https://trustee.ietf.org/license-info).
+
+       This version of this YANG module is part of RFC XXXX
+       (https://www.rfc-editor.org/info/rfcXXXX); see the RFC itself
+       for full legal notices.
+
+       The key words 'MUST', 'MUST NOT', 'REQUIRED', 'SHALL',
+       'SHALL NOT', 'SHOULD', 'SHOULD NOT', 'RECOMMENDED',
+       'NOT RECOMMENDED', 'MAY', and 'OPTIONAL' in this document
+       are to be interpreted as described in BCP 14 (RFC 2119)
+       (RFC 8174) when, and only when, they appear in all
+       capitals, as shown here.
+       ";
+
+   /*
+       If you have an implementation of this YANG module, you could
+       access it like something this over RESTCONF:
+
+       $ curl --location --request POST \
+       'https://localhost:8008/restconf/operations/petra:energy/query' \
+       --header 'Content-Type: application/yang-data+json' \
+       --user 'admin:admin' \
+       --data-raw '{
+         "input" : {
+           "src-ip": "10.10.10.10",
+           "dst-ip": "10.20.20.20",
+           "throughput": 40,
+
+           "measurement-interval": 900,
+           "recursive": false
+         }
+       }'
+
+       And if all goes well, you might receive (besides all the
+       HTTP headers) a reply body with something like this:
+
+       {
+         "output": {
+           "success": {
+             "watts-per-gigabit": 191.855,
+             "shape-metrics": {
+               "carbon-intensity": 108,
+               "energy-mix": [
+                 { "source": "solar", "percentage": 35.00 },
+                 { "source": "wind",  "percentage": 25.00 },
+                 { "source": "gas",   "percentage": 40.00 }
+               ],
+               "greenness-degree": 60.00,
+               "sustainability-score": 0.312,
+               "pue": 1.20,
+               "transmission-loss": 3.50,
+               "idle-watts": 12.500,
+               "temporal-carbon-variability": 14.250,
+               "sleep-mode-availability": 20.00,
+               "sustainability-stability-index": 0.880,
+               "trustworthiness-score": 0.950,
+               "variance-energy-consumption": 1.750,
+               "anomaly-factor": 0.420,
+               "cooling-energy-ratio": 15.00
+             }
+           }
+         }
+       }
+   */
+
+     revision 2026-02-26 {
+       description
+         "Initial SHAPE augmentation of PETRA, adding additional
+          sustainability metrics (including temporal/stability and
+          trustworthiness indicators).";
+       reference
+         "RFC XXXX: ...";
+     }
+
+     // ===== Groupings =====
+
+     grouping shape-metrics-g {
+       description
+         "Additional sustainability metrics defined by SHAPE that extend
+          the base PETRA query output.";
+
+       leaf carbon-intensity {
+         type uint32 {
+           range "0..max";
+         }
+         units "gCO2e/kWh";
+         description
+           "Carbon intensity of the electricity powering the path.";
+       }
+
+       list energy-mix {
+         key "source";
+         description
+           "Percentage contribution of each energy source to the total energy used on the path.";
+         leaf source {
+           type enumeration {
+             enum solar;
+             enum wind;
+             enum hydro;
+             enum nuclear;
+             enum coal;
+             enum gas;
+             enum biomass;
+             enum other;
+           }
+           description
+             "Type of energy source.";
+         }
+         leaf percentage {
+           type decimal64 {
+             fraction-digits 2;
+             range "0..100";
+           }
+           units "%";
+           description
+             "Percentage of path energy from this source.";
+         }
+       }
+
+       leaf greenness-degree {
+         type decimal64 {
+           fraction-digits 2;
+           range "0..100";
+         }
+         units "%";
+         description
+           "Aggregated percentage of energy from renewable sources.";
+       }
+
+       leaf sustainability-score {
+         type decimal64 {
+           fraction-digits 3;
+           range "0..1";
+         }
+         description
+           "Composite metric combining greenness degree and efficiency.
+            Suggested formula: (Greenness/100) × 1/(1 + Watts per Gigabit per second).";
+       }
+
+       leaf pue {
+         type decimal64 {
+           fraction-digits 2;
+           range "1..max";
+         }
+         description
+           "Power Usage Effectiveness: ratio of total facility energy to IT/networking energy.";
+       }
+
+       leaf transmission-loss {
+         type decimal64 {
+           fraction-digits 2;
+           range "0..100";
+         }
+         units "%";
+         description
+           "Energy lost in transmission as percentage of total energy input.";
+       }
+
+       leaf idle-watts {
+         type decimal64 {
+           fraction-digits 3;
+           range "0..max";
+         }
+         units "W";
+         description
+           "Energy consumed by the path infrastructure when idle.";
+       }
+
+       leaf temporal-carbon-variability {
+         type decimal64 {
+           fraction-digits 3;
+           range "0..max";
+         }
+         units "gCO2e/kWh";
+         description
+           "Quantifies how much the carbon intensity powering the path fluctuates over
+            an observation window (e.g., 15 minutes, 1 hour, 24 hours).";
+       }
+
+       leaf sleep-mode-availability {
+         type decimal64 {
+           fraction-digits 2;
+           range "0..100";
+         }
+         units "%";
+         description
+           "Percentage of time during which devices or segments on the path can enter
+            low-power or idle energy-saving modes (when supported and instrumented).";
+       }
+
+       leaf sustainability-stability-index {
+         type decimal64 {
+           fraction-digits 3;
+           range "0..1";
+         }
+         description
+           "Index (0..1) capturing the stability over time of a sustainability metric
+            (e.g., carbon intensity or greenness degree).";
+       }
+
+       leaf trustworthiness-score {
+         type decimal64 {
+           fraction-digits 3;
+           range "0..1";
+         }
+         description
+           "Composite score (0..1) reflecting reliability of reported sustainability data,
+            e.g., based on provenance, quality, freshness, and cross-source consistency.";
+       }
+
+       leaf variance-energy-consumption {
+         type decimal64 {
+           fraction-digits 3;
+           range "0..max";
+         }
+         units "W^2";
+         description
+           "Variance of energy consumption over an observation window.";
+       }
+
+       leaf anomaly-factor {
+         type decimal64 { fraction-digits 3; }
+         units "z-score";
+         description
+           "Deviation of current energy consumption from a historical mean, normalized
+            by standard deviation (z-factor).";
+       }
+
+       leaf cooling-energy-ratio {
+         type decimal64 {
+           fraction-digits 2;
+           range "0..100";
+         }
+         units "%";
+         description
+           "Ratio between cooling energy and IT/network energy for a path or segment.";
+       }
+     }
+
+     // ===== Augmentations =====
+
+     augment "/petra:energy/petra:query/petra:input" {
+       description
+         "Additional optional input parameters for SHAPE that qualify the
+          observation window and, when supported, recursive collection.";
+
+       leaf measurement-interval {
+         type uint32 {
+           range "1..max";
+         }
+         units "seconds";
+         description
+           "Observation window used to compute time-dependent metrics (e.g., variability,
+            stability, variance, and anomaly indicators).";
+       }
+
+       leaf recursive {
+         type boolean;
+         default "false";
+         description
+           "Whether the query should be expanded recursively across multiple administrative
+            domains (if supported).";
+       }
+     }
+
+     augment "/petra:energy/petra:query/petra:output/petra:result" {
+       description
+         "Additional status/error cases for PETRA query output to support
+          scenarios where energy data is unavailable or only partially
+          available along the resolved path.";
+
+       case energy-unavailable {
+         container energy-unavailable {
+           description
+             "The path was resolved but energy data is not available
+              for one or more segments. No watts-per-gigabit can be
+              returned. Corresponds to accuracy-unavailable in the
+              GREEN data-source-accuracy hierarchy.";
+         }
+       }
+     }
+
+     augment "/petra:energy/petra:query/petra:output/petra:result/petra:success" {
+       description
+         "Add SHAPE sustainability metrics to the successful PETRA query result.";
+
+       container shape-metrics {
+         description
+           "Collection of additional sustainability metrics defined by SHAPE.";
+         uses shape-metrics-g;
+       }
+     }
+   }
+
+5.  Security Considerations
+
+   SHAPE queries and responses can reveal operational and business-
+   sensitive information (e.g., energy efficiency, carbon footprint,
+   facility overheads, and potentially location- or time-correlated
+   behavior).  SHAPE API MAY be exposed via management protocols such as
+   NETCONF [RFC6241] and RESTCONF [RFC8040] and, therefore, it inherits
+   their security properties and deployment practices.  Implementations
+   MUST consider the following aspects:
+
+   *  *Secure transport:* Implementations MUST ensure confidentiality
+      and integrity protection for SHAPE exchanges (i.e., by using
+      secure transports mandated by the underlying management protocol).
+      Where RESTCONF is used, HTTPS is REQUIRED by [RFC8040].
+
+   *  *Authentication and authorization:* SHAPE servers MUST
+      authenticate clients and MUST enforce authorization on a per-
+      request basis.  Authorization SHOULD be granular (e.g., via
+      access-control mechanisms such as NACM [RFC8341]) and cover: (i)
+      which path endpoints can be queried, (ii) which metrics can be
+      returned (including SHAPE augmentations), and (iii) which
+      precision/granularity is permitted.
+
+   *  *Information disclosure controls:* Returned sustainability data
+      (i.e., energy mix, PUE, cooling-energy ratio, or temporal
+      variability) can be used to infer facility characteristics,
+      topology, utilization patterns, or operational policies.  Servers
+      SHOULD support policy controls that reduce disclosure risk (e.g.,
+      aggregation, reduced precision, or suppressing specific metrics)
+      for less-privileged clients.
+
+   *  *Input validation and bounds:* Servers MUST validate all inputs
+      (i.e., including path identifiers, throughput, measurement-
+      interval, and the recursive flag) and enforce reasonable bounds to
+      prevent expensive computations and state growth.  In particular,
+      servers SHOULD enforce upper limits on observation-window
+      durations, recursion depth/scope, and the amount of per-request
+      data returned.
+
+   *  *Denial-of-service resilience:* SHAPE computations may involve
+      multi-device sampling, aggregation, and historical lookups.
+      Servers SHOULD implement DoS mitigations such as rate limiting,
+      per-client quotas, request prioritization, and caching of commonly
+      requested results.  If requests are rejected due to overload or
+      policy, servers SHOULD return explicit errors rather than silently
+      ignoring requests.
+
+   *  *Multi-domain and recursive operation:* When the query is expanded
+      recursively across administrative domains, each domain MUST
+      enforce its own local policy and MUST NOT assume that ustream
+      requests are safe.  Implementations SHOULD ensure that recursive
+      expansion does not leak credentials, does not bypass local
+      authorization, and does not create amplification (e.g., fan-out
+      storms).  Responses obtained from external domains SHOULD be
+      treated as untrusted inputs.
+
+   *  *Integrity of measurement chain:* SHAPE metrics can be used for
+      automated decisions (e.g., policy enforcement or gSLAs).
+      Implementations SHOULD protect the integrity of the measurement
+      pipeline (collection, aggregation, and publication) and SHOULD
+      provide operational mechanisms such as audit logs and provenance
+      tracking to help detect tampering or misconfiguration.
+
+   *  *Privacy:* Sustainability metrics may correlate with customer
+      traffic patterns or reveal information about customer locations
+      and activity.  Implementations SHOULD minimize retention of per-
+      customer/per-flow data and SHOULD protect logs and telemetry
+      derived from SHAPE requests.
+
+6.  IANA Considerations
+
+   This document has no IANA actions.
+
+7.  References
+
+7.1.  Normative References
+
+   [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
+              Requirement Levels", BCP 14, RFC 2119,
+              DOI 10.17487/RFC2119, March 1997,
+              <https://www.rfc-editor.org/rfc/rfc2119>.
+
+   [RFC3688]  Mealling, M., "The IETF XML Registry", BCP 81, RFC 3688,
+              DOI 10.17487/RFC3688, January 2004,
+              <https://www.rfc-editor.org/rfc/rfc3688>.
+
+   [RFC6020]  Bjorklund, M., Ed., "YANG - A Data Modeling Language for
+              the Network Configuration Protocol (NETCONF)", RFC 6020,
+              DOI 10.17487/RFC6020, October 2010,
+              <https://www.rfc-editor.org/rfc/rfc6020>.
+
+   [RFC6241]  Enns, R., Ed., Bjorklund, M., Ed., Schoenwaelder, J., Ed.,
+              and A. Bierman, Ed., "Network Configuration Protocol
+              (NETCONF)", RFC 6241, DOI 10.17487/RFC6241, June 2011,
+              <https://www.rfc-editor.org/rfc/rfc6241>.
+
+   [RFC6242]  Wasserman, M., "Using the NETCONF Protocol over Secure
+              Shell (SSH)", RFC 6242, DOI 10.17487/RFC6242, June 2011,
+              <https://www.rfc-editor.org/rfc/rfc6242>.
+
+   [RFC6991]  Schoenwaelder, J., Ed., "Common YANG Data Types",
+              RFC 6991, DOI 10.17487/RFC6991, July 2013,
+              <https://www.rfc-editor.org/rfc/rfc6991>.
+
+   [RFC7950]  Bjorklund, M., Ed., "The YANG 1.1 Data Modeling Language",
+              RFC 7950, DOI 10.17487/RFC7950, August 2016,
+              <https://www.rfc-editor.org/rfc/rfc7950>.
+
+   [RFC8040]  Bierman, A., Bjorklund, M., and K. Watsen, "RESTCONF
+              Protocol", RFC 8040, DOI 10.17487/RFC8040, January 2017,
+              <https://www.rfc-editor.org/rfc/rfc8040>.
+
+   [RFC8174]  Leiba, B., "Ambiguity of Uppercase vs Lowercase in RFC
+              2119 Key Words", BCP 14, RFC 8174, DOI 10.17487/RFC8174,
+              May 2017, <https://www.rfc-editor.org/rfc/rfc8174>.
+
+   [RFC8309]  Wu, Q., Liu, W., and A. Farrel, "Service Models
+              Explained", RFC 8309, DOI 10.17487/RFC8309, January 2018,
+              <https://www.rfc-editor.org/rfc/rfc8309>.
+
+   [RFC8340]  Bjorklund, M. and L. Berger, Ed., "YANG Tree Diagrams",
+              BCP 215, RFC 8340, DOI 10.17487/RFC8340, March 2018,
+              <https://www.rfc-editor.org/rfc/rfc8340>.
+
+   [RFC8341]  Bierman, A. and M. Bjorklund, "Network Configuration
+              Access Control Model", STD 91, RFC 8341,
+              DOI 10.17487/RFC8341, March 2018,
+              <https://www.rfc-editor.org/rfc/rfc8341>.
+
+   [RFC9315]  Clemm, A., Ciavaglia, L., Granville, L. Z., and J.
+              Tantsura, "Intent-Based Networking - Concepts and
+              Definitions", RFC 9315, DOI 10.17487/RFC9315, October
+              2022, <https://www.rfc-editor.org/rfc/rfc9315>.
+
+7.2.  Informative References
+
+   [I-D.bcmj-green-power-and-energy-yang]
+              Claise, B., Chen, G., Palmero, M. P., and J. Lindblad,
+              "Power and Energy YANG Module", Work in Progress,
+              Internet-Draft, draft-bcmj-green-power-and-energy-yang-04,
+              2 March 2026, <https://datatracker.ietf.org/doc/html/
+              draft-bcmj-green-power-and-energy-yang-04>.
+
+   [I-D.ietf-green-framework]
+              Claise, B., Contreras, L. M., Lindblad, J., Palmero, M.
+              P., Stephan, E., and Q. Wu, "Framework for Energy
+              Efficiency Management", Work in Progress, Internet-Draft,
+              draft-ietf-green-framework-01, 17 March 2026,
+              <https://datatracker.ietf.org/doc/html/draft-ietf-green-
+              framework-01>.
+
+   [I-D.irtf-nmrg-ibn-usecases]
+              Yao, K., Chen, D., Jeong, J. P., Wu, Q., Yang, C.,
+              Contreras, L. M., and G. Fioccola, "Use Cases and
+              Practices for Intent-Based Networking", Work in Progress,
+              Internet-Draft, draft-irtf-nmrg-ibn-usecases-03, 15 March
+              2026, <https://datatracker.ietf.org/doc/html/draft-irtf-
+              nmrg-ibn-usecases-03>.
+
+   [I-D.petra-green-api]
+              Rodriguez-Natal, A., Contreras, L. M., Palmero, M. P.,
+              Lindblad, J., and A. G. Sánchez, "Path Energy Traffic
+              Ratio API (PETRA)", Work in Progress, Internet-Draft,
+              draft-petra-green-api-03, 2 March 2026,
+              <https://datatracker.ietf.org/doc/html/draft-petra-green-
+              api-03>.
+
+Acknowledgments
+
+   The contribution of A.  Gallego Sánchez to this document has been
+   partially supported by the Smart Networks and Services Joint
+   Undertaking (SNS JU) under the European Union's Horizon Europe
+   research and innovation project Sustain6G (Grant Agreement no.
+   101191936).
+
+   The contribution of L.M.  Contreras to this document has been
+   partially supported by the Smart Networks and Services Joint
+   Undertaking (SNS JU) under the European Union's Horizon Europe
+   research and innovation projects 6Green (Grant Agreement no.
+   101096925) and Exigence (Grant Agreement no. 101139120).
+
+Appendix A.  Use Cases
+
+   This section describes some use-cases where this specification might
+   be useful.
+
+A.1.  SD-WAN
+
+   Software-Defined Wide-Area Networks (SD-WAN) have become a common way
+   for enterprises to provide cost-effective connectivity across their
+   different geographically distributed sites.  Typically, SD-WAN
+   deployments operate as an overlay network that is established on top
+   of an existing underlay connectivity network.  One aspect to consider
+   is that in many SD-WAN production deployments the operator of the
+   overlay network and the operator of the underlay network are
+   different organizations.
+
+   This poses an additional challenge when trying to derive
+   sustainability metrics.  Even if the underlay network is instrumented
+   to collect energy data, this data is opaque to the operator of the
+   overlay network which has no access to underlay information.  While
+   operators of underlay networks offer certain general network metrics
+   to overlay operators, no interface has been defined to allow the
+   overlay operator to query the underlay network for energy
+   information.
+
+   In this context, the SHAPE specification presented in this document
+   enables the operator of the SD-WAN network to coordinate with the
+   underlay operator to capture sustainability data.  This in turns
+   opens further use-cases, from observability and reporting to
+   potentially overlay policies based on underlay energy data, further
+   enabling an overall more sustainable operation of the network.
+
+   In addition to energy considerations in SD-WAN deployments, SHAPE can
+   also be leveraged for broader energy-aware service routing.  In this
+   context, network controllers and service orchestrators—such as SD-WAN
+   controllers, transport SDN controllers, 5G slice orchestrators, or
+   multi-domain service orchestrators—can use SHAPE metrics not only to
+   balance latency, throughput, or load, but also to optimize path
+   selection according to sustainability objectives.  For example, paths
+   with the lowest carbon intensity or the highest share of renewable
+   energy in their energy mix could be preferred, enabling service
+   differentiation where “green paths” are explicitly prioritized.  This
+   brings a paradigm where routing decisions are jointly driven by
+   network performance and environmental impact.
+
+A.2.  Multilayer Energy Management
+
+   The concept of multilayer L3-L1 collection involves integrating data
+   from different network layers to provide a comprehensive view of
+   network operations.  The use case of multilayer involves collecting
+   and correlating data from Layer 3 (network layer) down to Layer 1
+   (physical layer).  This multilayer approach allows for better network
+   performance, optimization, and troubleshooting by providing end-to-
+   end visibility.
+
+   Leveraging SHAPE API for multilayer L3-L1 collection use case
+   enhances energy management by providing comprehensive visibility,
+   enabling optimization, and supporting proactive management.  This
+   makes SHAPE a useful tool for more accurate, efficient and effective
+   energy management in modern networks.
+
+A.3.  SLA Negotiation for Green Services
+
+   Another use case for SHAPE could be the negotiation of green Service
+   Level Agreements (gSLAs) between operators and enterprise customers.
+   By exposing SHAPE-derived metrics such as renewable energy
+   percentage, carbon intensity, or sustainability scores, providers can
+   offer differentiated SLAs that explicitly include environmental
+   targets.  This enables customers to select network services not only
+   based on performance guarantees, but also on their environmental
+   footprint, for example requesting that at least 60% of traffic be
+   carried over renewable-powered infrastructure.  Such gSLAs empower
+   customers to align their digital services with corporate
+   sustainability goals and reporting requirements, while operators can
+   use SHAPE as the trusted source of verifiable energy data.
+
+   gSLAs can be negotiated using customer-expressed green intents that
+   specify objectives such as maximum energy consumption, minimum energy
+   efficiency, carbon emission limits, and renewable energy usage
+   [I-D.irtf-nmrg-ibn-usecases].  SHAPE's metrics, including Watts per
+   Gigabit per second, carbon intensity, and energy mix, provide
+   essential measurements to translate these intents into network
+   configurations and to monitor compliance during service operation.
+   The lifecycle of green intents, encompassing fulfillment and
+   assurance phases [RFC9315], can be supported by SHAPE through its
+   capability to deliver real-time energy metrics for translation into
+   network policies and subsequent monitoring and validation.
+
+A.4.  Energy-Aware UPF and Edge Selection in 5G
+
+   Mobile Network Operators (MNOs) often have choices regarding the
+   placement of user-plane functions (UPFs), traffic break-out points,
+   and Multi-access Edge Computing (MEC) sites.  These choices influence
+   not only latency and capacity, but also the energy and carbon
+   footprint of the end-to-end user-plane path (e.g., from a radio site
+   or aggregation point towards a selected UPF/MEC and onwards to a data
+   network).
+
+   In this context, SHAPE can be used by the 5G slice orchestrator,
+   policy controller, or transport controller to query candidate paths
+   associated with alternative UPF/MEC selections and compare
+   sustainability metrics (e.g., watts-per-gigabit, carbon intensity,
+   energy mix, and temporal carbon variability over a defined
+   observation window).  This enables energy-aware traffic steering,
+   selection of greener break-out points when service constraints allow
+   it, and assurance of sustainability objectives for enterprise slices.
+
+A.5.  Sustainability Reporting Across Leased Backhaul and Network
+Sharing
+
+   MNOs frequently rely on third-party transport (e.g., leased lines or
+   wholesale backhaul) and may participate in network sharing
+   arrangements where different administrative domains contribute to the
+   effective end-to-end service path.  This makes it difficult to obtain
+   consistent and comparable sustainability metrics for internal carbon
+   accounting, regulatory reporting, or customer-facing sustainability
+   statements.
+
+   SHAPE's recursive usage model can support these scenarios by allowing
+   an MNO to obtain per-segment sustainability metrics from each
+   contributing domain (subject to authorization and policy) and then
+   aggregate them for an overall view of the service path.  When
+   combined with appropriate safeguards against double counting
+   (Section "Recursive Usage"), this enables a more robust, auditable
+   decomposition of energy and carbon contributions across shared or
+   outsourced infrastructure.
+
+Appendix B.  Requirements for Energy Efficiency Management
+
+   The document Framework for Energy Efficiency Management
+   [I-D.ietf-green-framework] describes a framework that comprises a
+   controller element.  In that document, the tasks of the controller
+   are defined as "collection, compute and aggregate".  In the context
+   of that framework, the controller could also expose SHAPE to offer
+   path-related energy information.  The figure below updates the one
+   present in [I-D.ietf-green-framework] to add an additional interface
+   (interface 'g') to the controller to represent the Path Traffic Ratio
+   API.
+
+    +------------------------------------------------------------------+
+    |                                                                  |
+    |                  (3) Network Domain Level                        |-+
+    |                                                                  | |
+    +------------------------------------------------------------------+ |
+                                                                         |
+    (a)              (b)          (c)                                    v
+    Inventory        Monitor        DataSheets/DataBase and/or          (g)
+    Of identity      Energy        | via API,                           API
+    and Capability   Efficiency    | Metadata and other             Service
+         ^               ^         | device/component/network     Interface
+         |               |         | related information to be:          ^
+         |               |         |                                     |
+         |               |         |  .Power/Energy related metrics      |
+         |               |         |  .Origin of Energy Mix              |
+         |               |         |  .Carbon aware based on location    |
+         |               |         |                                     |
+         |               |         |                                     |
+         |               |         v                                     |
+    +------------------------------------------------------------------+ |
+    |                                                                  | |
+    |       (2) controller (collection, compute and aggregate?)        |-+
+    |                                                                  |
+    +------------------------------------------------------------------+
+                    ^                      ^                      ^ |
+         (d)        |     (e)              |   (f)                | |
+         Inventory  |     Monitor power    |   Control            | |
+         Capability |     Proportion       |   (Energy saving     | |
+                    |     Energy efficiency|   Functionality      | |
+                    |     ratio, power     |   Localized mgmt/    | |
+                    |     consumption,     |   network wide mgmt) | |
+                    |     etc)             |                      | |
+                    |                      |                      | v
+    +--------------------------------------------------------------------+
+    |                                                                    |
+    |                       (1) Device/Component                         |
+    |                                                                    |
+    | +---------+  +-----------+  +----------------+  +----------------+ |
+    | | (I)     |  | (II)      |  | (III)          |  | (IV)           | |
+    | |         |  |           |  | Legacy         |  | 'Attached'(PoE | |
+    | | Device  |  | Component |  | Device         |  | end Point)     | |
+    | |         |  |           |  |                |  |                | |
+    | +---------+  +-----------+  +----------------+  +----------------+ |
+    +--------------------------------------------------------------------+
+
+Authors' Addresses
+
+   Adrian Gallego Sanchez
+   Deutsche Telekom
+   Guadalajara
+   Spain
+   Email: ADRIAN.GALLEGO-SANCHEZ@t-systems.com
+
+
+   Alberto Rodriguez-Natal
+   Cisco
+   Madrid
+   Spain
+   Email: natal@cisco.com
+
+
+   Luis M. Contreras
+   Telefonica
+   Madrid
+   Spain
+   Email: luismiguel.contrerasmurillo@telefonica.com
+
+
+   Marisol Palmero
+   Toledo
+   Spain
+   Email: marisol.ietf@gmail.com
+
+
+   Jan Lindblad
+   All For Eco
+   Email: jan.lindblad+ietf@for.eco
