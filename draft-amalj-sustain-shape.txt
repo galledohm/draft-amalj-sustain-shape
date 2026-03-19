@@ -1055,8 +1055,6 @@ Appendix B.  Requirements for Energy Efficiency Management
     | +---------+  +-----------+  +----------------+  +----------------+ |
     +--------------------------------------------------------------------+
 
-         Figure 1: SHAPE Integration in Energy Management Framework
-
 Authors' Addresses
 
    Adrian Gallego Sanchez
