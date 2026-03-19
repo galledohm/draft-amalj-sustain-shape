@@ -12,19 +12,22 @@ v: 3
 area: "IRTF"
 workgroup: "Proposed Sustainability and the Internet Proposed Research Group"
 keyword:
- - energy
- - network
- - sustainability
- - API
+
+- energy
+- network
+- sustainability
+- API
+
 venue:
   group: "Proposed Sustainability and the Internet Proposed Research Group"
   type: "Research Group"
-  mail: "sustain@irtf.org"
-  arch: "https://mailarchive.ietf.org/arch/browse/sustain/"
+  mail: "<sustain@irtf.org>"
+  arch: "<https://mailarchive.ietf.org/arch/browse/sustain/>"
   github: "galledohm/draft-amalj-sustain-shape"
-  latest: "https://galledohm.github.io/draft-amalj-sustain-shape/draft-amalj-sustain-shape.html"
+  latest: "<https://galledohm.github.io/draft-amalj-sustain-shape/draft-amalj-sustain-shape.html>"
 
 author:
+
  -
     ins: A. Gallego Sanchez
     fullname: Adrian Gallego Sanchez
