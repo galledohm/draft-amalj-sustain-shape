@@ -286,8 +286,8 @@ module irtf-shape {
       "output": {
         "success": {
           "watts-per-gigabit": 191.855,
-          "carbon-intensity": 108,
           "shape-metrics": {
+            "carbon-intensity": 108,
             "energy-mix": [
               { "source": "solar", "percentage": 35.00 },
               { "source": "wind",  "percentage": 25.00 },
@@ -351,8 +351,8 @@ module irtf-shape {
           enum biomass;
           enum other;
         }
+        description
           "Type of energy source.";
-                  "carbon-intensity": 108,
       }
       leaf percentage {
         type decimal64 {
@@ -640,31 +640,31 @@ SHAPE's recursive usage model can support these scenarios by allowing an MNO to 
 The document Framework for Energy Efficiency Management {{I-D.ietf-green-framework}} describes a framework that comprises a controller element. In that document, the tasks of the controller are defined as "collection, compute and aggregate". In the context of that framework, the controller could also expose SHAPE to offer path-related energy information. The figure below updates the one present in {{I-D.ietf-green-framework}} to add an additional interface (interface 'g') to the controller to represent the Path Traffic Ratio API.
 
 ~~~~bash
-+--------------------------------------------------------------------+
-|                                                                    |
-|                  (3) Network Domain Level                          |
-|                                                                    |
-+--------------------------------------------------------------------+
-
-(a)             (b)             (c)
-Inventory       Monitor      +- DataSheets/DataBase
-Of identity     Energy       |  and/or via API
-and Capability  Efficiency   |  Metadata and other
-      ^              ^       | device/component/network
-      |              |       | related information:                  (g)
-      |              |       |                                      SHAPE
-      |              |       |  .Power/Energy related metrics         API
-      |              |       |  .information                           ^
-      |              |       |  .origin of Energy Mix                  |
-      |              |       |  .carbon aware based on location        |
-      |              |       |                                         |
-      |              |       v                                         |
-+--------------------------------------------------------------------+ |
-|                                                                    | |
-|       (2) controller (collection, compute and aggregate?)          +-+
-|                                                                    |
-+--------------------------------------------------------------------+
-                ^                      ^                      ^ |
+ +------------------------------------------------------------------+
+ |                                                                  |
+ |                  (3) Network Domain Level                        |-+
+ |                                                                  | |
+ +------------------------------------------------------------------+ |
+                                                                      |
+ (a)              (b)          (c)                                    v
+ Inventory        Monitor        DataSheets/DataBase and/or          (g)
+ Of identity      Energy        | via API,                           API
+ and Capability   Efficiency    | Metadata and other             Service
+      ^               ^         | device/component/network     Interface
+      |               |         | related information to be:          ^
+      |               |         |                                     |
+      |               |         |  .Power/Energy related metrics      |
+      |               |         |  .Origin of Energy Mix              |
+      |               |         |  .Carbon aware based on location    |
+      |               |         |                                     |
+      |               |         |                                     |
+      |               |         v                                     |
+ +------------------------------------------------------------------+ |
+ |                                                                  | |
+ |       (2) controller (collection, compute and aggregate?)        |-+
+ |                                                                  |
+ +------------------------------------------------------------------+
+                 ^                      ^                      ^ |
       (d)        |     (e)              |   (f)                | |
       Inventory  |     Monitor power    |   Control            | |
       Capability |     Proportion       |   (Energy saving     | |
@@ -673,16 +673,16 @@ and Capability  Efficiency   |  Metadata and other
                  |     consumption,     |   network wide mgmt) | |
                  |     etc)             |                      | |
                  |                      |                      | v
-+--------------------------------------------------------------------+
-|                                                                    |
-|                       (1) Device/Component                         |
-|                                                                    |
-| +---------+  +-----------+  +----------------+  +----------------+ |
-| | (I)     |  | (II)      |  | (III)          |  | (IV)           | |
-| |         |  |           |  | Legacy         |  | 'Attached'(PoE | |
-| | Device  |  | Component |  | Device         |  | end Point)     | |
-| |         |  |           |  |                |  |                | |
-| +---------+  +-----------+  +----------------+  +----------------+ |
-+--------------------------------------------------------------------+
+ +--------------------------------------------------------------------+
+ |                                                                    |
+ |                       (1) Device/Component                         |
+ |                                                                    |
+ | +---------+  +-----------+  +----------------+  +----------------+ |
+ | | (I)     |  | (II)      |  | (III)          |  | (IV)           | |
+ | |         |  |           |  | Legacy         |  | 'Attached'(PoE | |
+ | | Device  |  | Component |  | Device         |  | end Point)     | |
+ | |         |  |           |  |                |  |                | |
+ | +---------+  +-----------+  +----------------+  +----------------+ |
+ +--------------------------------------------------------------------+
 ~~~~
 {: #shape-framework title="SHAPE Integration in Energy Management Framework"}
