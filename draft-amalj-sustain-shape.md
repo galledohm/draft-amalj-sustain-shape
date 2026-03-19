@@ -12,19 +12,22 @@ v: 3
 area: "IRTF"
 workgroup: "Proposed Sustainability and the Internet Proposed Research Group"
 keyword:
- - energy
- - network
- - sustainability
- - API
+
+- energy
+- network
+- sustainability
+- API
+
 venue:
   group: "Proposed Sustainability and the Internet Proposed Research Group"
   type: "Research Group"
-  mail: "sustain@irtf.org"
-  arch: "https://mailarchive.ietf.org/arch/browse/sustain/"
+  mail: "<sustain@irtf.org>"
+  arch: "<https://mailarchive.ietf.org/arch/browse/sustain/>"
   github: "galledohm/draft-amalj-sustain-shape"
-  latest: "https://galledohm.github.io/draft-amalj-sustain-shape/draft-amalj-sustain-shape.html"
+  latest: "<https://galledohm.github.io/draft-amalj-sustain-shape/draft-amalj-sustain-shape.html>"
 
 author:
+
  -
     ins: A. Gallego Sanchez
     fullname: Adrian Gallego Sanchez
@@ -73,7 +76,7 @@ normative:
   RFC9315:
 
 informative:
-  I-D.belmq-green-framework:
+  I-D.ietf-green-framework:
   I-D.petra-green-api:
   I-D.bcmj-green-power-and-energy-yang:
   I-D.irtf-nmrg-ibn-usecases:
@@ -93,7 +96,7 @@ Sustainability is becoming one of the major societal goals for the next decade, 
 
 As with any other network metric, the energy traffic ratio could be collected from the underlying network infrastructure. However, there is not a common or single definition of energy and sustainability metrics towards network consumers so that they can be uniformly reported, particularly in heterogeneous network scenarios. This document introduces an API to query networks about the Energy Traffic Ratio.
 
-Beyond simple efficiency indicators such as watts per gigabit, network stakeholders are increasingly interested in richer sustainability information, such as carbon intensity, energy mix, power usage effectiveness (PUE), idle energy draw, transmission losses, and cooling overheads (e.g., Cooling Energy Ratio). In addition, operational and temporal aspects matter: the ability of a path to spend time in low-power states (Sleep-mode Availability), the variability of carbon intensity over time (Temporal Carbon Variability), and the stability of reported sustainability behavior (e.g., Sustainability Stability Index).
+Beyond simple efficiency indicators such as Watts per Gigabit per second per second, network stakeholders are increasingly interested in richer sustainability information, such as carbon intensity, energy mix, power usage effectiveness (PUE), idle energy draw, transmission losses, and cooling overheads (e.g., Cooling Energy Ratio). In addition, operational and temporal aspects matter: the ability of a path to spend time in low-power states (Sleep-mode Availability), the variability of carbon intensity over time (Temporal Carbon Variability), and the stability of reported sustainability behavior (e.g., Sustainability Stability Index).
 
 Finally, sustainability data is increasingly used for automated decision-making and assurance (e.g., in green SLAs), which introduces a need for indicators of data quality and robustness. Metrics such as variance of energy consumption (VEC), anomaly detection signals (e.g., Anomaly Factor), and a trustworthiness score of data sources (TDS) help distinguish persistent characteristics from transient conditions and support more reliable sustainability reporting and policy enforcement.
 
@@ -105,7 +108,7 @@ Finally, sustainability data is increasingly used for automated decision-making 
 
 This document describes an API to query a network about several sustainability-related metrics for a given path. SHAPE extends PETRA as defined in [I-D.petra-green-api] with additional sustainability metrics. It takes as input the source and destination of a path along with the traffic throughput between and returns energy information related to the traffic on the path. This is energy computed by the infrastructure that is dynamically part of the traffic path. The API is agnostic to the actual hops and underlying infrastructure that enables a path, which might change transparently to the API. This document only describes the API; the computation of the energy information to return is out of the scope of this document.
 
-The API can return a variety of energy-related parameters to provide a complete view of path sustainability. These include base efficiency and footprint indicators (e.g., watts per gigabit and carbon intensity), energy mix and renewable energy contributions, and overhead and operational characteristics (e.g., transmission losses, idle energy draw, cooling overheads, and the availability of low-power states such as sleep modes).
+The API can return a variety of energy-related parameters to provide a complete view of path sustainability. These include base efficiency and footprint indicators (e.g., Watts per Gigabit per second per second and carbon intensity), energy mix and renewable energy contributions, and overhead and operational characteristics (e.g., transmission losses, idle energy draw, cooling overheads, and the availability of low-power states such as sleep modes).
 
 In addition to point-in-time values, the API can expose temporal and assurance-oriented information, such as the variability of carbon intensity over a defined observation window, stability indices for sustainability behavior (e.g., Sustainability Stability Index), statistical measures of energy variability, anomaly signals, and indicators of confidence in the underlying data sources. Such metrics can help consumers distinguish persistent characteristics from transient fluctuations.
 
@@ -115,11 +118,11 @@ Furthermore, the SHAPE's energy parameters complement ongoing work on green serv
 
 This API allows to return a number of energy attributes associated with the path and the traffic. Currently the parameters that could be returned as energy information as part of the query are:
 
-- **Watts per Gigabit:** (Inherited from PETRA) How many Watts are consumed per Gigabit of traffic traversing the path.
-- **Carbon Intensity:** (Inherited from PETRA) How much carbon emissions are generated as a consequence of the energy consumed.
+- **Watts per Gigabit per second:** (Inherited from PETRA) How many Watts are consumed per Gigabit of traffic traversing the path.
+- **Carbon Intensity:** How much carbon emissions are generated as a consequence of the energy consumed.
 - **Energy Mix (%):** Percentage of energy used in the path that comes from different energy sources (e.g., solar, wind, biomass, nuclear, fossil fuel).
 - **Greenness Degree (%):** The aggregated percentage of energy consumed on the path that comes from renewable sources. Useful to rank and select paths based on renewable energy usage.
-- **Sustainability Score (0–1):** Composite metric combining greenness degree and energy efficiency (Watts per Gigabit), calculated as (Greenness/100) × 1/(1 + Watts per Gigabit). Higher values indicate more sustainable, efficient paths.
+- **Sustainability Score (0–1):** Composite metric combining greenness degree and energy efficiency (Watts per Gigabit per second), calculated as (Greenness/100) × 1/(1 + Watts per Gigabit per second). Higher values indicate more sustainable, efficient paths.
 - **Power Usage Effectiveness (PUE):** The ratio of total facility power consumption to the power consumption of networking/IT equipment.
 - **Transmission Loss (%):** The percentage of energy lost along the path due to transmission inefficiencies.
 - **Idle Energy Draw (Watts):** The amount of energy consumed by the path infrastructure when idle or under negligible load.
@@ -198,6 +201,7 @@ module: irtf-shape
 
   augment /petra:energy/petra:query/petra:output/petra:result/petra:success:
     +--ro shape-metrics
+       +--ro carbon-intensity?                 uint32
        +--ro energy-mix*                       -> list of sources and percentages
        +--ro greenness-degree?                 decimal64
        +--ro sustainability-score?             decimal64
@@ -285,8 +289,8 @@ module irtf-shape {
       "output": {
         "success": {
           "watts-per-gigabit": 191.855,
-          "carbon-intensity": 108,
           "shape-metrics": {
+            "carbon-intensity": 108,
             "energy-mix": [
               { "source": "solar", "percentage": 35.00 },
               { "source": "wind",  "percentage": 25.00 },
@@ -325,6 +329,15 @@ module irtf-shape {
     description
       "Additional sustainability metrics defined by SHAPE that extend
        the base PETRA query output.";
+
+    leaf carbon-intensity {
+      type uint32 {
+        range "0..max";
+      }
+      units "gCO2e/kWh";
+      description
+        "Carbon intensity of the electricity powering the path.";
+    }
 
     list energy-mix {
       key "source";
@@ -372,7 +385,7 @@ module irtf-shape {
       }
       description
         "Composite metric combining greenness degree and efficiency.
-         Suggested formula: (Greenness/100) × 1/(1 + Watts per Gigabit).";
+         Suggested formula: (Greenness/100) × 1/(1 + Watts per Gigabit per second).";
     }
 
     leaf pue {
@@ -516,17 +529,6 @@ module irtf-shape {
            GREEN data-source-accuracy hierarchy.";
       }
     }
-
-    case partial-result {
-      container partial-result {
-        description
-          "Energy data is available for part of the path only.
-           The watts-per-gigabit returned covers the measurable
-           segments. The data-source-accuracy leaf SHOULD be set
-           to reflect the least accurate contributing measurement.";
-        uses energy-metrics-g;
-      }
-    }
   }
 
   augment "/petra:energy/petra:query/petra:output/petra:result/petra:success" {
@@ -608,7 +610,7 @@ Leveraging SHAPE API for multilayer L3-L1 collection use case enhances energy ma
 
 Another use case for SHAPE could be the negotiation of green Service Level Agreements (gSLAs) between operators and enterprise customers. By exposing SHAPE-derived metrics such as renewable energy percentage, carbon intensity, or sustainability scores, providers can offer differentiated SLAs that explicitly include environmental targets. This enables customers to select network services not only based on performance guarantees, but also on their environmental footprint, for example requesting that at least 60% of traffic be carried over renewable-powered infrastructure. Such gSLAs empower customers to align their digital services with corporate sustainability goals and reporting requirements, while operators can use SHAPE as the trusted source of verifiable energy data.
 
-gSLAs can be negotiated using customer-expressed green intents that specify objectives such as maximum energy consumption, minimum energy efficiency, carbon emission limits, and renewable energy usage [I-D.irtf-nmrg-ibn-usecases]. SHAPE's metrics, including watts per gigabit, carbon intensity, and energy mix, provide essential measurements to translate these intents into network configurations and to monitor compliance during service operation. The lifecycle of green intents, encompassing fulfillment and assurance phases [RFC9315], can be supported by SHAPE through its capability to deliver real-time energy metrics for translation into network policies and subsequent monitoring and validation.
+gSLAs can be negotiated using customer-expressed green intents that specify objectives such as maximum energy consumption, minimum energy efficiency, carbon emission limits, and renewable energy usage [I-D.irtf-nmrg-ibn-usecases]. SHAPE's metrics, including Watts per Gigabit per second, carbon intensity, and energy mix, provide essential measurements to translate these intents into network configurations and to monitor compliance during service operation. The lifecycle of green intents, encompassing fulfillment and assurance phases [RFC9315], can be supported by SHAPE through its capability to deliver real-time energy metrics for translation into network policies and subsequent monitoring and validation.
 
 ## A.4. Energy-Aware UPF and Edge Selection in 5G
 {:numbered="false"}
@@ -627,34 +629,34 @@ SHAPE's recursive usage model can support these scenarios by allowing an MNO to 
 # Appendix B. Requirements for Energy Efficiency Management
 {:numbered="false"}
 
-The document Framework for Energy Efficiency Management {{I-D.belmq-green-framework}} describes a framework that comprises a controller element. In that document, the tasks of the controller are defined as "collection, compute and aggregate". In the context of that framework, the controller could also expose SHAPE to offer path-related energy information. The figure below updates the one present in {{I-D.belmq-green-framework}} to add an additional interface (interface 'g') to the controller to represent the Path Traffic Ratio API.
+The document Framework for Energy Efficiency Management {{I-D.ietf-green-framework}} describes a framework that comprises a controller element. In that document, the tasks of the controller are defined as "collection, compute and aggregate". In the context of that framework, the controller could also expose SHAPE to offer path-related energy information. The figure below updates the one present in {{I-D.ietf-green-framework}} to add an additional interface (interface 'g') to the controller to represent the Path Traffic Ratio API.
 
 ~~~~bash
-+--------------------------------------------------------------------+
-|                                                                    |
-|                  (3) Network Domain Level                          |
-|                                                                    |
-+--------------------------------------------------------------------+
-
-(a)             (b)             (c)
-Inventory       Monitor      +- DataSheets/DataBase
-Of identity     Energy       |  and/or via API
-and Capability  Efficiency   |  Metadata and other
-      ^              ^       | device/component/network
-      |              |       | related information:                  (g)
-      |              |       |                                      SHAPE
-      |              |       |  .Power/Energy related metrics         API
-      |              |       |  .information                           ^
-      |              |       |  .origin of Energy Mix                  |
-      |              |       |  .carbon aware based on location        |
-      |              |       |                                         |
-      |              |       v                                         |
-+--------------------------------------------------------------------+ |
-|                                                                    | |
-|       (2) controller (collection, compute and aggregate?)          +-+
-|                                                                    |
-+--------------------------------------------------------------------+
-                ^                      ^                      ^ |
+ +------------------------------------------------------------------+
+ |                                                                  |
+ |                  (3) Network Domain Level                        |-+
+ |                                                                  | |
+ +------------------------------------------------------------------+ |
+                                                                      |
+ (a)              (b)          (c)                                    v
+ Inventory        Monitor        DataSheets/DataBase and/or          (g)
+ Of identity      Energy        | via API,                           API
+ and Capability   Efficiency    | Metadata and other             Service
+      ^               ^         | device/component/network     Interface
+      |               |         | related information to be:          ^
+      |               |         |                                     |
+      |               |         |  .Power/Energy related metrics      |
+      |               |         |  .Origin of Energy Mix              |
+      |               |         |  .Carbon aware based on location    |
+      |               |         |                                     |
+      |               |         |                                     |
+      |               |         v                                     |
+ +------------------------------------------------------------------+ |
+ |                                                                  | |
+ |       (2) controller (collection, compute and aggregate?)        |-+
+ |                                                                  |
+ +------------------------------------------------------------------+
+                 ^                      ^                      ^ |
       (d)        |     (e)              |   (f)                | |
       Inventory  |     Monitor power    |   Control            | |
       Capability |     Proportion       |   (Energy saving     | |
@@ -663,16 +665,16 @@ and Capability  Efficiency   |  Metadata and other
                  |     consumption,     |   network wide mgmt) | |
                  |     etc)             |                      | |
                  |                      |                      | v
-+--------------------------------------------------------------------+
-|                                                                    |
-|                       (1) Device/Component                         |
-|                                                                    |
-| +---------+  +-----------+  +----------------+  +----------------+ |
-| | (I)     |  | (II)      |  | (III)          |  | (IV)           | |
-| |         |  |           |  | Legacy         |  | 'Attached'(PoE | |
-| | Device  |  | Component |  | Device         |  | end Point)     | |
-| |         |  |           |  |                |  |                | |
-| +---------+  +-----------+  +----------------+  +----------------+ |
-+--------------------------------------------------------------------+
+ +--------------------------------------------------------------------+
+ |                                                                    |
+ |                       (1) Device/Component                         |
+ |                                                                    |
+ | +---------+  +-----------+  +----------------+  +----------------+ |
+ | | (I)     |  | (II)      |  | (III)          |  | (IV)           | |
+ | |         |  |           |  | Legacy         |  | 'Attached'(PoE | |
+ | | Device  |  | Component |  | Device         |  | end Point)     | |
+ | |         |  |           |  |                |  |                | |
+ | +---------+  +-----------+  +----------------+  +----------------+ |
+ +--------------------------------------------------------------------+
 ~~~~
 {: #shape-framework title="SHAPE Integration in Energy Management Framework"}
