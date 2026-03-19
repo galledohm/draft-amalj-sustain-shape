@@ -73,7 +73,7 @@ normative:
   RFC9315:
 
 informative:
-  I-D.belmq-green-framework:
+  I-D.ietf-green-framework:
   I-D.petra-green-api:
   I-D.bcmj-green-power-and-energy-yang:
   I-D.irtf-nmrg-ibn-usecases:
@@ -627,7 +627,7 @@ SHAPE's recursive usage model can support these scenarios by allowing an MNO to 
 # Appendix B. Requirements for Energy Efficiency Management
 {:numbered="false"}
 
-The document Framework for Energy Efficiency Management {{I-D.belmq-green-framework}} describes a framework that comprises a controller element. In that document, the tasks of the controller are defined as "collection, compute and aggregate". In the context of that framework, the controller could also expose SHAPE to offer path-related energy information. The figure below updates the one present in {{I-D.belmq-green-framework}} to add an additional interface (interface 'g') to the controller to represent the Path Traffic Ratio API.
+The document Framework for Energy Efficiency Management {{I-D.ietf-green-framework}} describes a framework that comprises a controller element. In that document, the tasks of the controller are defined as "collection, compute and aggregate". In the context of that framework, the controller could also expose SHAPE to offer path-related energy information. The figure below updates the one present in {{I-D.ietf-green-framework}} to add an additional interface (interface 'g') to the controller to represent the Path Traffic Ratio API.
 
 ~~~~bash
 +--------------------------------------------------------------------+
