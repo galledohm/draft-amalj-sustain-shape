@@ -117,13 +117,13 @@ Table of Contents
    Beyond simple efficiency indicators such as Watts per Gigabit per
    second per second, network stakeholders are increasingly interested
    in richer sustainability information, such as carbon intensity,
-   energy mix, power usage effectiveness (PUE), idle energy draw,
-   transmission losses, and cooling overheads (e.g., Cooling Energy
-   Ratio).  In addition, operational and temporal aspects matter: the
-   ability of a path to spend time in low-power states (Sleep-mode
-   Availability), the variability of carbon intensity over time
-   (Temporal Carbon Variability), and the stability of reported
-   sustainability behavior (e.g., Sustainability Stability Index).
+   energy mix, idle energy draw, transmission losses, and cooling
+   overheads (e.g., Cooling Energy Ratio).  In addition, operational and
+   temporal aspects matter: the ability of a path to spend time in low-
+   power states (Sleep-mode Availability), the variability of carbon
+   intensity over time (Temporal Carbon Variability), and the stability
+   of reported sustainability behavior (e.g., Sustainability Stability
+   Index).
 
    Finally, sustainability data is increasingly used for automated
    decision-making and assurance (e.g., in green SLAs), which introduces
@@ -211,10 +211,6 @@ Table of Contents
       second).  Higher values indicate more sustainable, efficient
       paths.
 
-   *  *Power Usage Effectiveness (PUE):* The ratio of total facility
-      power consumption to the power consumption of networking/IT
-      equipment.
-
    *  *Transmission Loss (%):* The percentage of energy lost along the
       path due to transmission inefficiencies.
 
@@ -265,10 +261,10 @@ Table of Contents
 
    *  *Cooling Energy Ratio (CER) (%):* Quantifies the share of total
       energy consumed by a path or segment that is attributable to
-      cooling rather than networking/IT workload.  It parallels PUE but
-      is per-path or per-segment, not facility-wide.  Higher values
-      indicate higher cooling overhead relative to useful forwarding
-      energy.
+      cooling rather than networking/IT workload.  It is a path- or
+      segment-level metric rather than a facility-wide efficiency
+      metric.  Higher values indicate higher cooling overhead relative
+      to useful forwarding energy.
 
    These metrics are OPTIONAL, and an implementation MAY support a
    subset depending on available measurement capabilities.
@@ -354,7 +350,6 @@ Table of Contents
           +--ro energy-mix*                       -> list of sources and percentages
           +--ro greenness-degree?                 decimal64
           +--ro sustainability-score?             decimal64
-          +--ro pue?                              decimal64
           +--ro transmission-loss?                decimal64
           +--ro idle-watts?                       decimal64
           +--ro temporal-carbon-variability?      decimal64
@@ -445,7 +440,6 @@ Table of Contents
                ],
                "greenness-degree": 60.00,
                "sustainability-score": 0.312,
-               "pue": 1.20,
                "transmission-loss": 3.50,
                "idle-watts": 12.500,
                "temporal-carbon-variability": 14.250,
@@ -533,15 +527,6 @@ Table of Contents
          description
            "Composite metric combining greenness degree and efficiency.
             Suggested formula: (Greenness/100) × 1/(1 + Watts per Gigabit per second).";
-       }
-
-       leaf pue {
-         type decimal64 {
-           fraction-digits 2;
-           range "1..max";
-         }
-         description
-           "Power Usage Effectiveness: ratio of total facility energy to IT/networking energy.";
        }
 
        leaf transmission-loss {
@@ -714,10 +699,10 @@ Table of Contents
       precision/granularity is permitted.
 
    *  *Information disclosure controls:* Returned sustainability data
-      (i.e., energy mix, PUE, cooling-energy ratio, or temporal
-      variability) can be used to infer facility characteristics,
-      topology, utilization patterns, or operational policies.  Servers
-      SHOULD support policy controls that reduce disclosure risk (e.g.,
+      (i.e., energy mix, cooling-energy ratio, or temporal variability)
+      can be used to infer facility characteristics, topology,
+      utilization patterns, or operational policies.  Servers SHOULD
+      support policy controls that reduce disclosure risk (e.g.,
       aggregation, reduced precision, or suppressing specific metrics)
       for less-privileged clients.
 
@@ -829,9 +814,9 @@ Table of Contents
    [I-D.bcmj-green-power-and-energy-yang]
               Claise, B., Chen, G., Palmero, M. P., and J. Lindblad,
               "Power and Energy YANG Module", Work in Progress,
-              Internet-Draft, draft-bcmj-green-power-and-energy-yang-04,
-              2 March 2026, <https://datatracker.ietf.org/doc/html/
-              draft-bcmj-green-power-and-energy-yang-04>.
+              Internet-Draft, draft-bcmj-green-power-and-energy-yang-07,
+              26 May 2026, <https://datatracker.ietf.org/doc/html/draft-
+              bcmj-green-power-and-energy-yang-07>.
 
    [I-D.ietf-green-framework]
               Claise, B., Contreras, L. M., Lindblad, J., Palmero, M.
