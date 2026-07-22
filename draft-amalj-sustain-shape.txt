@@ -80,11 +80,12 @@ Table of Contents
    4.  YANG Module
      4.1.  Module Structure
      4.2.  Module Definition
-   5.  Security Considerations
-   6.  IANA Considerations
-   7.  References
-     7.1.  Normative References
-     7.2.  Informative References
+   5.  Operational Considerations
+   6.  Security Considerations
+   7.  IANA Considerations
+   8.  References
+     8.1.  Normative References
+     8.2.  Informative References
    Acknowledgments
    Appendix A.  Use Cases
      A.1.  SD-WAN
@@ -114,16 +115,15 @@ Table of Contents
    document introduces an API to query networks about the Energy Traffic
    Ratio.
 
-   Beyond simple efficiency indicators such as Watts per Gigabit per
-   second per second, network stakeholders are increasingly interested
-   in richer sustainability information, such as carbon intensity,
-   energy mix, idle energy draw, transmission losses, and cooling
-   overheads (e.g., Cooling Energy Ratio).  In addition, operational and
-   temporal aspects matter: the ability of a path to spend time in low-
-   power states (Sleep-mode Availability), the variability of carbon
-   intensity over time (Temporal Carbon Variability), and the stability
-   of reported sustainability behavior (e.g., Sustainability Stability
-   Index).
+   Beyond simple efficiency indicators such as Watts per Gigabit,
+   network stakeholders are increasingly interested in richer
+   sustainability information, such as carbon intensity, energy mix,
+   idle energy draw, transmission losses, and cooling overheads (e.g.,
+   Cooling Energy Ratio).  In addition, operational and temporal aspects
+   matter: the ability of a path to spend time in low-power states
+   (Sleep-mode Availability), the variability of carbon intensity over
+   time (Temporal Carbon Variability), and the stability of reported
+   sustainability behavior (e.g., Sustainability Stability Index).
 
    Finally, sustainability data is increasingly used for automated
    decision-making and assurance (e.g., in green SLAs), which introduces
@@ -147,8 +147,10 @@ Table of Contents
    This document describes an API to query a network about several
    sustainability-related metrics for a given path.  SHAPE extends PETRA
    as defined in [I-D.petra-green-api] with additional sustainability
-   metrics.  It takes as input the source and destination of a path
-   along with the traffic throughput between and returns energy
+   metrics.  It reuses PETRA endpoint identifiers for source and
+   destination (e.g., IP address, IP prefix, MAC address, or slice SDP
+   identifier) and PETRA traffic characterization (i.e., throughput, or
+   time-window plus transmitted data volume), and returns sustainability
    information related to the traffic on the path.  This is energy
    computed by the infrastructure that is dynamically part of the
    traffic path.  The API is agnostic to the actual hops and underlying
@@ -158,12 +160,11 @@ Table of Contents
    document.
 
    The API can return a variety of energy-related parameters to provide
-   a complete view of path sustainability.  These include base
-   efficiency and footprint indicators (e.g., Watts per Gigabit per
-   second per second and carbon intensity), energy mix and renewable
-   energy contributions, and overhead and operational characteristics
-   (e.g., transmission losses, idle energy draw, cooling overheads, and
-   the availability of low-power states such as sleep modes).
+   a complete view of path sustainability.  These include PETRA baseline
+   efficiency indicators (e.g., Watts per Gigabit) and SHAPE-specific
+   sustainability extensions (e.g., carbon intensity, energy mix,
+   transmission losses, idle energy draw, cooling overheads, and the
+   availability of low-power states such as sleep modes).
 
    In addition to point-in-time values, the API can expose temporal and
    assurance-oriented information, such as the variability of carbon
@@ -188,11 +189,13 @@ Table of Contents
 3.1.  Energy Information
 
    This API allows to return a number of energy attributes associated
-   with the path and the traffic.  Currently the parameters that could
-   be returned as energy information as part of the query are:
+   with the path and the traffic.  PETRA defines the base query and
+   baseline energy metric (Watts per Gigabit); SHAPE augments PETRA with
+   additional sustainability metrics.  Currently the parameters that
+   could be returned as energy information as part of the query are:
 
-   *  *Watts per Gigabit per second:* (Inherited from PETRA) How many
-      Watts are consumed per Gigabit of traffic traversing the path.
+   *  *Watts per Gigabit:* (Inherited from PETRA) How many Watts are
+      consumed per Gigabit of traffic traversing the path.
 
    *  *Carbon Intensity:* How much carbon emissions are generated as a
       consequence of the energy consumed.
@@ -335,6 +338,12 @@ Table of Contents
    YANG module, as per the YANG specification [RFC7950], that imports
    PETRA and augments it with additional inputs and metrics.
 
+   SHAPE reuses PETRA input and output structures.  In particular,
+   source and destination are modeled using PETRA endpoint identifier
+   choices, traffic is characterized using PETRA traffic alternatives,
+   and SHAPE adds optional sustainability metrics on top of PETRA
+   successful query output.
+
 4.1.  Module Structure
 
    module: irtf-shape
@@ -379,7 +388,7 @@ Table of Contents
      description
        "Initial YANG module for SHAPE API, v1.0.0
 
-       SHAPE extends the PETRA YANG module ('draft-petra-path-energy-api')
+       SHAPE extends the PETRA YANG module ('draft-petra-green-api')
        with additional optional sustainability-related metrics and, where
        needed, additional input parameters to qualify observation windows.
 
@@ -410,13 +419,17 @@ Table of Contents
        access it like something this over RESTCONF:
 
        $ curl --location --request POST \
-       'https://localhost:8008/restconf/operations/petra:energy/query' \
+       'https://localhost:8008/restconf/operations/irtf-shape:energy/query' \
        --header 'Content-Type: application/yang-data+json' \
        --user 'admin:admin' \
        --data-raw '{
          "input" : {
-           "src-ip": "10.10.10.10",
-           "dst-ip": "10.20.20.20",
+           "source": {
+             "ip-prefix": "10.10.10.0/24"
+           },
+           "destination": {
+             "ip-prefix": "10.20.20.0/24"
+           },
            "throughput": 40,
 
            "measurement-interval": 900,
@@ -466,7 +479,7 @@ Table of Contents
 
      // ===== Groupings =====
 
-     grouping shape-metrics-g {
+     grouping shape-metrics {
        description
          "Additional sustainability metrics defined by SHAPE that extend
           the base PETRA query output.";
@@ -646,23 +659,6 @@ Table of Contents
        }
      }
 
-     augment "/petra:energy/petra:query/petra:output/petra:result" {
-       description
-         "Additional status/error cases for PETRA query output to support
-          scenarios where energy data is unavailable or only partially
-          available along the resolved path.";
-
-       case energy-unavailable {
-         container energy-unavailable {
-           description
-             "The path was resolved but energy data is not available
-              for one or more segments. No watts-per-gigabit can be
-              returned. Corresponds to accuracy-unavailable in the
-              GREEN data-source-accuracy hierarchy.";
-         }
-       }
-     }
-
      augment "/petra:energy/petra:query/petra:output/petra:result/petra:success" {
        description
          "Add SHAPE sustainability metrics to the successful PETRA query result.";
@@ -670,20 +666,69 @@ Table of Contents
        container shape-metrics {
          description
            "Collection of additional sustainability metrics defined by SHAPE.";
-         uses shape-metrics-g;
+         uses shape-metrics;
        }
      }
    }
 
-5.  Security Considerations
+5.  Operational Considerations
 
-   SHAPE queries and responses can reveal operational and business-
-   sensitive information (e.g., energy efficiency, carbon footprint,
-   facility overheads, and potentially location- or time-correlated
-   behavior).  SHAPE API MAY be exposed via management protocols such as
-   NETCONF [RFC6241] and RESTCONF [RFC8040] and, therefore, it inherits
-   their security properties and deployment practices.  Implementations
-   MUST consider the following aspects:
+   This section highlights deployment and operation aspects for SHAPE,
+   following the operational guidance commonly applied to network
+   management specifications and the guidance in
+   [I-D.ietf-opsawg-rfc5706bis].
+
+   *  *Measurement method impacts:* SHAPE results can vary depending on
+      how measurements are obtained (e.g., direct telemetry, estimates,
+      model-based aggregation, or historical averaging).  Operators
+      SHOULD document which methods are used for each metric and SHOULD
+      expose measurement confidence where possible.
+
+   *  *Traffic characterization impacts:* Query results can differ when
+      traffic is characterized by throughput versus time-window plus
+      transmitted volume.  Implementations SHOULD document supported
+      PETRA traffic-characterization modes and SHOULD avoid mixing
+      incomparable measurement bases in trend analysis.
+
+   *  *Consumer intent differences:* Operational use cases may have
+      different requirements.  Customer-facing use cases (e.g., SD-WAN
+      sustainability visibility) generally require stability,
+      repeatability, and clear policy constraints, while operator
+      optimization use cases may prioritize freshness and responsiveness
+      over strict comparability.
+
+   *  *Recursive aggregation and double counting:* Recursive operation
+      across domains introduces a risk of counting the same energy
+      contribution multiple times.  Implementations SHOULD define clear
+      aggregation boundaries (e.g., segment ownership, handoff points,
+      or unique contribution identifiers) and SHOULD provide
+      auditability for aggregation logic.
+
+   *  *Subset support and policy controls:* SHAPE metrics are optional
+      and may be supported only partially.  Implementations SHOULD make
+      unsupported metrics explicit in operational documentation and
+      SHOULD align metric exposure with authorization and disclosure
+      policies.
+
+6.  Security Considerations
+
+   The YANG module defined in this document augments PETRA query input
+   and output nodes under /petra:energy/petra:query.  SHAPE queries and
+   responses can reveal operational and business-sensitive information
+   (e.g., energy efficiency, carbon footprint, facility overheads, and
+   potentially location- or time-correlated behavior).  SHAPE API MAY be
+   exposed via management protocols such as NETCONF [RFC6241] and
+   RESTCONF [RFC8040] and, therefore, it inherits their security
+   properties and deployment practices.
+
+   The SHAPE input leaves measurement-interval and recursive are
+   configuration inputs to an action invocation.  Unauthorized
+   manipulation of these inputs can increase computation cost and
+   disclosure scope.  The SHAPE output container shape-metrics exposes
+   additional sustainability data and can reveal sensitive operational
+   characteristics.
+
+   Implementations MUST consider the following aspects:
 
    *  *Secure transport:* Implementations MUST ensure confidentiality
       and integrity protection for SHAPE exchanges (i.e., by using
@@ -694,9 +739,9 @@ Table of Contents
       authenticate clients and MUST enforce authorization on a per-
       request basis.  Authorization SHOULD be granular (e.g., via
       access-control mechanisms such as NACM [RFC8341]) and cover: (i)
-      which path endpoints can be queried, (ii) which metrics can be
-      returned (including SHAPE augmentations), and (iii) which
-      precision/granularity is permitted.
+      which path endpoints can be queried, (ii) which PETRA and SHAPE
+      metrics can be returned, and (iii) which precision/granularity is
+      permitted.
 
    *  *Information disclosure controls:* Returned sustainability data
       (i.e., energy mix, cooling-energy ratio, or temporal variability)
@@ -707,12 +752,13 @@ Table of Contents
       for less-privileged clients.
 
    *  *Input validation and bounds:* Servers MUST validate all inputs
-      (i.e., including path identifiers, throughput, measurement-
-      interval, and the recursive flag) and enforce reasonable bounds to
-      prevent expensive computations and state growth.  In particular,
-      servers SHOULD enforce upper limits on observation-window
-      durations, recursion depth/scope, and the amount of per-request
-      data returned.
+      (i.e., including PETRA endpoint identifiers, PETRA traffic
+      characterization inputs such as throughput or time-window with
+      transmitted volume, measurement-interval, and the recursive flag)
+      and enforce reasonable bounds to prevent expensive computations
+      and state growth.  In particular, servers SHOULD enforce upper
+      limits on observation-window durations, recursion depth/scope, and
+      the amount of per-request data returned.
 
    *  *Denial-of-service resilience:* SHAPE computations may involve
       multi-device sampling, aggregation, and historical lookups.
@@ -724,7 +770,7 @@ Table of Contents
 
    *  *Multi-domain and recursive operation:* When the query is expanded
       recursively across administrative domains, each domain MUST
-      enforce its own local policy and MUST NOT assume that ustream
+      enforce its own local policy and MUST NOT assume that upstream
       requests are safe.  Implementations SHOULD ensure that recursive
       expansion does not leak credentials, does not bypass local
       authorization, and does not create amplification (e.g., fan-out
@@ -744,13 +790,24 @@ Table of Contents
       customer/per-flow data and SHOULD protect logs and telemetry
       derived from SHAPE requests.
 
-6.  IANA Considerations
+7.  IANA Considerations
 
-   This document has no IANA actions.
+   IANA is requested to register the following YANG module in the "YANG
+   Module Names" registry [RFC3688].
 
-7.  References
+   Name: irtf-shape
 
-7.1.  Normative References
+   Namespace: urn:ietf:params:xml:ns:yang:irtf-shape
+
+   Prefix: shape
+
+   Reference: RFC XXXX
+
+   Maintained by IANA?  N
+
+8.  References
+
+8.1.  Normative References
 
    [RFC2119]  Bradner, S., "Key words for use in RFCs to Indicate
               Requirement Levels", BCP 14, RFC 2119,
@@ -761,11 +818,6 @@ Table of Contents
               DOI 10.17487/RFC3688, January 2004,
               <https://www.rfc-editor.org/rfc/rfc3688>.
 
-   [RFC6020]  Bjorklund, M., Ed., "YANG - A Data Modeling Language for
-              the Network Configuration Protocol (NETCONF)", RFC 6020,
-              DOI 10.17487/RFC6020, October 2010,
-              <https://www.rfc-editor.org/rfc/rfc6020>.
-
    [RFC6241]  Enns, R., Ed., Bjorklund, M., Ed., Schoenwaelder, J., Ed.,
               and A. Bierman, Ed., "Network Configuration Protocol
               (NETCONF)", RFC 6241, DOI 10.17487/RFC6241, June 2011,
@@ -774,10 +826,6 @@ Table of Contents
    [RFC6242]  Wasserman, M., "Using the NETCONF Protocol over Secure
               Shell (SSH)", RFC 6242, DOI 10.17487/RFC6242, June 2011,
               <https://www.rfc-editor.org/rfc/rfc6242>.
-
-   [RFC6991]  Schoenwaelder, J., Ed., "Common YANG Data Types",
-              RFC 6991, DOI 10.17487/RFC6991, July 2013,
-              <https://www.rfc-editor.org/rfc/rfc6991>.
 
    [RFC7950]  Bjorklund, M., Ed., "The YANG 1.1 Data Modeling Language",
               RFC 7950, DOI 10.17487/RFC7950, August 2016,
@@ -809,7 +857,11 @@ Table of Contents
               Definitions", RFC 9315, DOI 10.17487/RFC9315, October
               2022, <https://www.rfc-editor.org/rfc/rfc9315>.
 
-7.2.  Informative References
+   [RFC9911]  Schönwälder, J., Ed., "Common YANG Data Types", RFC 9911,
+              DOI 10.17487/RFC9911, December 2025,
+              <https://www.rfc-editor.org/rfc/rfc9911>.
+
+8.2.  Informative References
 
    [I-D.bcmj-green-power-and-energy-yang]
               Claise, B., Chen, G., Palmero, M. P., and J. Lindblad,
@@ -822,9 +874,17 @@ Table of Contents
               Claise, B., Contreras, L. M., Lindblad, J., Palmero, M.
               P., Stephan, E., and Q. Wu, "Framework for Energy
               Efficiency Management", Work in Progress, Internet-Draft,
-              draft-ietf-green-framework-01, 17 March 2026,
+              draft-ietf-green-framework-02, 5 July 2026,
               <https://datatracker.ietf.org/doc/html/draft-ietf-green-
-              framework-01>.
+              framework-02>.
+
+   [I-D.ietf-opsawg-rfc5706bis]
+              Claise, B., Clarke, J., Farrel, A., Barguil, S.,
+              Pignataro, C., and R. Chen, "Guidelines for Considering
+              Operations and Management in IETF Specifications", Work in
+              Progress, Internet-Draft, draft-ietf-opsawg-rfc5706bis-05,
+              26 June 2026, <https://datatracker.ietf.org/doc/html/
+              draft-ietf-opsawg-rfc5706bis-05>.
 
    [I-D.irtf-nmrg-ibn-usecases]
               Yao, K., Chen, D., Jeong, J. P., Wu, Q., Yang, C.,
@@ -838,9 +898,14 @@ Table of Contents
               Rodriguez-Natal, A., Contreras, L. M., Palmero, M. P.,
               Lindblad, J., and A. G. Sánchez, "Path Energy Traffic
               Ratio API (PETRA)", Work in Progress, Internet-Draft,
-              draft-petra-green-api-03, 2 March 2026,
+              draft-petra-green-api-04, 6 July 2026,
               <https://datatracker.ietf.org/doc/html/draft-petra-green-
-              api-03>.
+              api-04>.
+
+   [RFC9907]  Bierman, A., Boucadair, M., Ed., and Q. Wu, "Guidelines
+              for Authors and Reviewers of Documents Containing YANG
+              Data Models", BCP 216, RFC 9907, DOI 10.17487/RFC9907,
+              March 2026, <https://www.rfc-editor.org/rfc/rfc9907>.
 
 Acknowledgments
 
