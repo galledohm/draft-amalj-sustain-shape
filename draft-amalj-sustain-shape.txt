@@ -164,7 +164,10 @@ Table of Contents
    efficiency indicators (e.g., Watts per Gigabit) and SHAPE-specific
    sustainability extensions (e.g., carbon intensity, energy mix,
    transmission losses, idle energy draw, cooling overheads, and the
-   availability of low-power states such as sleep modes).
+   availability of low-power states such as sleep modes).  For
+   authoritative sustainability comparison and optimization, carbon-
+   intensity and temporal variability indicators are the primary
+   actionable metrics.
 
    In addition to point-in-time values, the API can expose temporal and
    assurance-oriented information, such as the variability of carbon
@@ -191,28 +194,34 @@ Table of Contents
    This API allows to return a number of energy attributes associated
    with the path and the traffic.  PETRA defines the base query and
    baseline energy metric (Watts per Gigabit); SHAPE augments PETRA with
-   additional sustainability metrics.  Currently the parameters that
-   could be returned as energy information as part of the query are:
+   additional sustainability metrics emphasizing carbon impact and
+   operational variability.  Currently the parameters that could be
+   returned as energy information as part of the query are:
 
    *  *Watts per Gigabit:* (Inherited from PETRA) How many Watts are
       consumed per Gigabit of traffic traversing the path.
 
-   *  *Carbon Intensity:* How much carbon emissions are generated as a
-      consequence of the energy consumed.
+   *  *Carbon Intensity:* How much carbon emissions (e.g., gCO2e/kWh)
+      are generated as a consequence of the energy consumed.  This is
+      the primary actionable metric for sustainability-aware routing and
+      policy enforcement.
 
    *  *Energy Mix (%):* Percentage of energy used in the path that comes
       from different energy sources (e.g., solar, wind, biomass,
-      nuclear, fossil fuel).
+      nuclear, fossil fuel).  Comparability of renewable percentages
+      across paths may be limited by measurement scope, time window, and
+      accounting/certification boundaries.
 
    *  *Greenness Degree (%):* The aggregated percentage of energy
-      consumed on the path that comes from renewable sources.  Useful to
-      rank and select paths based on renewable energy usage.
+      consumed on the path that comes from renewable sources.  This
+      metric can support policy-driven reporting, but by itself does not
+      fully characterize carbon impact across operators or countries.
 
-   *  *Sustainability Score (0–1):* Composite metric combining greenness
-      degree and energy efficiency (Watts per Gigabit per second),
-      calculated as (Greenness/100) × 1/(1 + Watts per Gigabit per
-      second).  Higher values indicate more sustainable, efficient
-      paths.
+   *  *Sustainability Score (0–1):* (Informative) Composite metric
+      combining greenness degree and energy efficiency.  This can be
+      used as an implementation-specific ranking aid, but carbon-
+      intensity and temporal variability metrics are recommended for
+      authoritative sustainability assessment.
 
    *  *Transmission Loss (%):* The percentage of energy lost along the
       path due to transmission inefficiencies.
@@ -553,7 +562,10 @@ Table of Contents
          }
          units "%";
          description
-           "Aggregated percentage of energy from renewable sources.";
+           "Aggregated percentage of energy from renewable sources.
+            This metric is not always directly comparable across domains
+            and accounting boundaries; carbon-intensity is the primary
+            cross-domain sustainability metric.";
        }
 
        leaf sustainability-score {
@@ -562,8 +574,10 @@ Table of Contents
            range "0..1";
          }
          description
-           "Composite metric combining greenness degree and efficiency.
-            Suggested formula: (Greenness/100) × 1/(1 + Watts per Gigabit per second).";
+           "Informative composite metric combining greenness degree and
+            energy efficiency for implementation-specific ranking.
+            Carbon-intensity and temporal variability metrics are
+            RECOMMENDED for authoritative sustainability assessment.";
        }
 
        leaf transmission-loss {
@@ -713,6 +727,13 @@ Table of Contents
       transmitted volume.  Implementations SHOULD document supported
       PETRA traffic-characterization modes and SHOULD avoid mixing
       incomparable measurement bases in trend analysis.
+
+   *  *Comparability caveat for renewable percentages:* Renewable-
+      percentage indicators (e.g., greenness-degree) can be influenced
+      by measurement boundaries, time windows, and accounting
+      instruments.  Implementations SHOULD avoid using a single
+      aggregated renewable percentage as the sole basis for cross-domain
+      optimization.
 
    *  *Consumer intent differences:* Operational use cases may have
       different requirements.  Customer-facing use cases (e.g., SD-WAN
@@ -983,12 +1004,14 @@ A.1.  SD-WAN
    controllers, transport SDN controllers, 5G slice orchestrators, or
    multi-domain service orchestrators—can use SHAPE metrics not only to
    balance latency, throughput, or load, but also to optimize path
-   selection according to sustainability objectives.  For example, paths
-   with the lowest carbon intensity or the highest share of renewable
-   energy in their energy mix could be preferred, enabling service
-   differentiation where “green paths” are explicitly prioritized.  This
-   brings a paradigm where routing decisions are jointly driven by
-   network performance and environmental impact.
+   selection according to sustainability objectives.  Carbon-intensity
+   and temporal-carbon-variability metrics are the primary optimization
+   levers for low-emission routing.  Energy mix and renewable
+   percentages can complement decisions where policy requires specific
+   sourcing criteria, but should not be used as standalone
+   sustainability indicators.  This brings a paradigm where routing
+   decisions are jointly driven by network performance and carbon
+   impact.
 
 A.2.  Multilayer Energy Management
 
@@ -1010,26 +1033,27 @@ A.3.  SLA Negotiation for Green Services
 
    Another use case for SHAPE could be the negotiation of green Service
    Level Agreements (gSLAs) between operators and enterprise customers.
-   By exposing SHAPE-derived metrics such as renewable energy
-   percentage, carbon intensity, or sustainability scores, providers can
-   offer differentiated SLAs that explicitly include environmental
-   targets.  This enables customers to select network services not only
-   based on performance guarantees, but also on their environmental
-   footprint, for example requesting that at least 60% of traffic be
-   carried over renewable-powered infrastructure.  Such gSLAs empower
-   customers to align their digital services with corporate
-   sustainability goals and reporting requirements, while operators can
-   use SHAPE as the trusted source of verifiable energy data.
+   By exposing SHAPE-derived metrics such as carbon intensity, energy
+   efficiency, and temporal variability, providers can offer
+   differentiated SLAs that explicitly include environmental targets.
+   This enables customers to select network services not only based on
+   performance guarantees, but also on their actual carbon impact.
+   Renewable-percentage and energy-mix metrics MAY support policy-driven
+   sourcing requirements, but carbon-intensity remains the primary
+   metric for carbon accounting and SLA compliance.  Such gSLAs empower
+   customers to align their digital services with verifiable
+   sustainability goals, while operators can use SHAPE as the trusted
+   source of energy and carbon data.
 
    gSLAs can be negotiated using customer-expressed green intents that
    specify objectives such as maximum energy consumption, minimum energy
-   efficiency, carbon emission limits, and renewable energy usage
+   efficiency, carbon emission limits, and renewable-energy constraints
    [I-D.irtf-nmrg-ibn-usecases].  SHAPE's metrics, including Watts per
-   Gigabit per second, carbon intensity, and energy mix, provide
-   essential measurements to translate these intents into network
-   configurations and to monitor compliance during service operation.
-   The lifecycle of green intents, encompassing fulfillment and
-   assurance phases [RFC9315], can be supported by SHAPE through its
+   Gigabit, carbon intensity, temporal carbon variability, and energy
+   mix, provide essential measurements to translate these intents into
+   network configurations and to monitor compliance during service
+   operation.  The lifecycle of green intents, encompassing fulfillment
+   and assurance phases [RFC9315], can be supported by SHAPE through its
    capability to deliver real-time energy metrics for translation into
    network policies and subsequent monitoring and validation.
 
