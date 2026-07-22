@@ -64,7 +64,7 @@ author:
 
 normative:
   RFC3688:
-  RFC6020:
+  RFC7950:
   RFC6241:
   RFC6242:
   RFC6991:
