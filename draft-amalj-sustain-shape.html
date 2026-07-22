@@ -1395,7 +1395,7 @@ Network API   .         : Network Configuration :         .
         </h3>
 <div class="lang-yang sourcecode" id="section-4.1-1">
 <pre>
-module: irtf-shape
+module: ietf-shape
   +--imports ietf-petra
 
   augment /petra:energy/petra:query/petra:input:
@@ -1428,9 +1428,9 @@ module: irtf-shape
         </h3>
 <div class="breakable lang-yang sourcecode" id="section-4.2-1">
 <pre>
-module irtf-shape {
+module ietf-shape {
   yang-version 1.1;
-  namespace "urn:ietf:params:xml:ns:yang:irtf-shape";
+  namespace "urn:ietf:params:xml:ns:yang:ietf-shape";
   prefix shape;
 
   import ietf-petra {
@@ -1476,7 +1476,7 @@ module irtf-shape {
     access it like something this over RESTCONF:
 
     $ curl --location --request POST \
-    'https://localhost:8008/restconf/operations/irtf-shape:energy/query' \
+    'https://localhost:8008/restconf/operations/ietf-shape:energy/query' \
     --header 'Content-Type: application/yang-data+json' \
     --user 'admin:admin' \
     --data-raw '{
@@ -1556,14 +1556,38 @@ module irtf-shape {
         "Percentage contribution of each energy source to the total energy used on the path.";
       leaf source {
         type enumeration {
-          enum solar;
-          enum wind;
-          enum hydro;
-          enum nuclear;
-          enum coal;
-          enum gas;
-          enum biomass;
-          enum other;
+          enum solar {
+            description
+              "Energy sourced from solar generation.";
+          }
+          enum wind {
+            description
+              "Energy sourced from wind generation.";
+          }
+          enum hydro {
+            description
+              "Energy sourced from hydroelectric generation.";
+          }
+          enum nuclear {
+            description
+              "Energy sourced from nuclear generation.";
+          }
+          enum coal {
+            description
+              "Energy sourced from coal-based generation.";
+          }
+          enum gas {
+            description
+              "Energy sourced from gas-based generation.";
+          }
+          enum biomass {
+            description
+              "Energy sourced from biomass generation.";
+          }
+          enum other {
+            description
+              "Energy sourced from other or unspecified generation.";
+          }
         }
         description
           "Type of energy source.";
@@ -1803,8 +1827,8 @@ module irtf-shape {
 <a href="#section-7" class="section-number selfRef">7. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
       </h2>
 <p id="section-7-1">IANA is requested to register the following YANG module in the "YANG Module Names" registry <span>[<a href="#RFC3688" class="cite xref">RFC3688</a>]</span>.<a href="#section-7-1" class="pilcrow">¶</a></p>
-<p id="section-7-2">Name: irtf-shape<a href="#section-7-2" class="pilcrow">¶</a></p>
-<p id="section-7-3">Namespace: urn:ietf:params:xml:ns:yang:irtf-shape<a href="#section-7-3" class="pilcrow">¶</a></p>
+<p id="section-7-2">Name: ietf-shape<a href="#section-7-2" class="pilcrow">¶</a></p>
+<p id="section-7-3">Namespace: urn:ietf:params:xml:ns:yang:ietf-shape<a href="#section-7-3" class="pilcrow">¶</a></p>
 <p id="section-7-4">Prefix: shape<a href="#section-7-4" class="pilcrow">¶</a></p>
 <p id="section-7-5">Reference: RFC XXXX<a href="#section-7-5" class="pilcrow">¶</a></p>
 <p id="section-7-6">Maintained by IANA? N<a href="#section-7-6" class="pilcrow">¶</a></p>
