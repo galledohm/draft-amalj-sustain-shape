@@ -267,7 +267,7 @@ module irtf-shape {
     access it like something this over RESTCONF:
 
     $ curl --location --request POST \
-    'https://localhost:8008/restconf/operations/petra:energy/query' \
+    'https://localhost:8008/restconf/operations/irtf-shape:energy/query' \
     --header 'Content-Type: application/yang-data+json' \
     --user 'admin:admin' \
     --data-raw '{
