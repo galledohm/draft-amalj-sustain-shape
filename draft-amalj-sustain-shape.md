@@ -192,7 +192,7 @@ SHAPE reuses PETRA input and output structures. In particular, source and destin
 ## Module Structure
 
 ~~~~yang
-module: irtf-shape
+module: ietf-shape
   +--imports ietf-petra
 
   augment /petra:energy/petra:query/petra:input:
@@ -219,9 +219,9 @@ module: irtf-shape
 ## Module Definition
 
 ~~~~yang
-module irtf-shape {
+module ietf-shape {
   yang-version 1.1;
-  namespace "urn:ietf:params:xml:ns:yang:irtf-shape";
+  namespace "urn:ietf:params:xml:ns:yang:ietf-shape";
   prefix shape;
 
   import ietf-petra {
@@ -267,7 +267,7 @@ module irtf-shape {
     access it like something this over RESTCONF:
 
     $ curl --location --request POST \
-    'https://localhost:8008/restconf/operations/irtf-shape:energy/query' \
+    'https://localhost:8008/restconf/operations/ietf-shape:energy/query' \
     --header 'Content-Type: application/yang-data+json' \
     --user 'admin:admin' \
     --data-raw '{
@@ -347,14 +347,38 @@ module irtf-shape {
         "Percentage contribution of each energy source to the total energy used on the path.";
       leaf source {
         type enumeration {
-          enum solar;
-          enum wind;
-          enum hydro;
-          enum nuclear;
-          enum coal;
-          enum gas;
-          enum biomass;
-          enum other;
+          enum solar {
+            description
+              "Energy sourced from solar generation.";
+          }
+          enum wind {
+            description
+              "Energy sourced from wind generation.";
+          }
+          enum hydro {
+            description
+              "Energy sourced from hydroelectric generation.";
+          }
+          enum nuclear {
+            description
+              "Energy sourced from nuclear generation.";
+          }
+          enum coal {
+            description
+              "Energy sourced from coal-based generation.";
+          }
+          enum gas {
+            description
+              "Energy sourced from gas-based generation.";
+          }
+          enum biomass {
+            description
+              "Energy sourced from biomass generation.";
+          }
+          enum other {
+            description
+              "Energy sourced from other or unspecified generation.";
+          }
         }
         description
           "Type of energy source.";
@@ -565,9 +589,9 @@ Implementations MUST consider the following aspects:
 
 IANA is requested to register the following YANG module in the "YANG Module Names" registry {{RFC3688}}.
 
-Name: irtf-shape
+Name: ietf-shape
 
-Namespace: urn:ietf:params:xml:ns:yang:irtf-shape
+Namespace: urn:ietf:params:xml:ns:yang:ietf-shape
 
 Prefix: shape
 
