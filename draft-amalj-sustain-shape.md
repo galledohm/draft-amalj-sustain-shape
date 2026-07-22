@@ -67,12 +67,11 @@ normative:
   RFC7950:
   RFC6241:
   RFC6242:
-  RFC6991:
-  RFC7950:
   RFC8040:
   RFC8309:
   RFC8340:
   RFC8341:
+  RFC9911:
   RFC9315:
 
 informative:
@@ -95,7 +94,7 @@ Sustainability is becoming one of the major societal goals for the next decade, 
 
 As with any other network metric, the energy traffic ratio could be collected from the underlying network infrastructure. However, there is not a common or single definition of energy and sustainability metrics towards network consumers so that they can be uniformly reported, particularly in heterogeneous network scenarios. This document introduces an API to query networks about the Energy Traffic Ratio.
 
-Beyond simple efficiency indicators such as Watts per Gigabit per second per second, network stakeholders are increasingly interested in richer sustainability information, such as carbon intensity, energy mix, power usage effectiveness (PUE), idle energy draw, transmission losses, and cooling overheads (e.g., Cooling Energy Ratio). In addition, operational and temporal aspects matter: the ability of a path to spend time in low-power states (Sleep-mode Availability), the variability of carbon intensity over time (Temporal Carbon Variability), and the stability of reported sustainability behavior (e.g., Sustainability Stability Index).
+Beyond simple efficiency indicators such as Watts per Gigabit, network stakeholders are increasingly interested in richer sustainability information, such as carbon intensity, energy mix, power usage effectiveness (PUE), idle energy draw, transmission losses, and cooling overheads (e.g., Cooling Energy Ratio). In addition, operational and temporal aspects matter: the ability of a path to spend time in low-power states (Sleep-mode Availability), the variability of carbon intensity over time (Temporal Carbon Variability), and the stability of reported sustainability behavior (e.g., Sustainability Stability Index).
 
 Finally, sustainability data is increasingly used for automated decision-making and assurance (e.g., in green SLAs), which introduces a need for indicators of data quality and robustness. Metrics such as variance of energy consumption (VEC), anomaly detection signals (e.g., Anomaly Factor), and a trustworthiness score of data sources (TDS) help distinguish persistent characteristics from transient conditions and support more reliable sustainability reporting and policy enforcement.
 
@@ -105,9 +104,9 @@ Finally, sustainability data is increasingly used for automated decision-making 
 
 # Sustainability holistic API for Path Energy Evaluation (SHAPE)
 
-This document describes an API to query a network about several sustainability-related metrics for a given path. SHAPE extends PETRA as defined in [I-D.petra-green-api] with additional sustainability metrics. It takes as input the source and destination of a path along with the traffic throughput between and returns energy information related to the traffic on the path. This is energy computed by the infrastructure that is dynamically part of the traffic path. The API is agnostic to the actual hops and underlying infrastructure that enables a path, which might change transparently to the API. This document only describes the API; the computation of the energy information to return is out of the scope of this document.
+This document describes an API to query a network about several sustainability-related metrics for a given path. SHAPE extends PETRA as defined in [I-D.petra-green-api] with additional sustainability metrics. It reuses PETRA endpoint identifiers for source and destination (e.g., IP address, IP prefix, MAC address, or slice SDP identifier) and PETRA traffic characterization (i.e., throughput, or time-window plus transmitted data volume), and returns sustainability information related to the traffic on the path. This is energy computed by the infrastructure that is dynamically part of the traffic path. The API is agnostic to the actual hops and underlying infrastructure that enables a path, which might change transparently to the API. This document only describes the API; the computation of the energy information to return is out of the scope of this document.
 
-The API can return a variety of energy-related parameters to provide a complete view of path sustainability. These include base efficiency and footprint indicators (e.g., Watts per Gigabit per second per second and carbon intensity), energy mix and renewable energy contributions, and overhead and operational characteristics (e.g., transmission losses, idle energy draw, cooling overheads, and the availability of low-power states such as sleep modes).
+The API can return a variety of energy-related parameters to provide a complete view of path sustainability. These include PETRA baseline efficiency indicators (e.g., Watts per Gigabit) and SHAPE-specific sustainability extensions (e.g., carbon intensity, energy mix, transmission losses, idle energy draw, cooling overheads, and the availability of low-power states such as sleep modes).
 
 In addition to point-in-time values, the API can expose temporal and assurance-oriented information, such as the variability of carbon intensity over a defined observation window, stability indices for sustainability behavior (e.g., Sustainability Stability Index), statistical measures of energy variability, anomaly signals, and indicators of confidence in the underlying data sources. Such metrics can help consumers distinguish persistent characteristics from transient fluctuations.
 
@@ -115,9 +114,9 @@ Furthermore, the SHAPE's energy parameters complement ongoing work on green serv
 
 ## Energy Information
 
-This API allows to return a number of energy attributes associated with the path and the traffic. Currently the parameters that could be returned as energy information as part of the query are:
+This API allows to return a number of energy attributes associated with the path and the traffic. PETRA defines the base query and baseline energy metric (Watts per Gigabit); SHAPE augments PETRA with additional sustainability metrics. Currently the parameters that could be returned as energy information as part of the query are:
 
-- **Watts per Gigabit per second:** (Inherited from PETRA) How many Watts are consumed per Gigabit of traffic traversing the path.
+- **Watts per Gigabit:** (Inherited from PETRA) How many Watts are consumed per Gigabit of traffic traversing the path.
 - **Carbon Intensity:** How much carbon emissions are generated as a consequence of the energy consumed.
 - **Energy Mix (%):** Percentage of energy used in the path that comes from different energy sources (e.g., solar, wind, biomass, nuclear, fossil fuel).
 - **Greenness Degree (%):** The aggregated percentage of energy consumed on the path that comes from renewable sources. Useful to rank and select paths based on renewable energy usage.
@@ -187,6 +186,8 @@ Network API   .         : Network Configuration :         .
 
 SHAPE is specified as an augmentation to the PETRA YANG module defined in {{I-D.petra-green-api}}. This section provides an example YANG module, as per the YANG specification {{RFC7950}}, that imports PETRA and augments it with additional inputs and metrics.
 
+SHAPE reuses PETRA input and output structures. In particular, source and destination are modeled using PETRA endpoint identifier choices, traffic is characterized using PETRA traffic alternatives, and SHAPE adds optional sustainability metrics on top of PETRA successful query output.
+
 ## Module Structure
 
 ~~~~yang
@@ -235,7 +236,7 @@ module irtf-shape {
   description
     "Initial YANG module for SHAPE API, v1.0.0
 
-    SHAPE extends the PETRA YANG module ('draft-petra-path-energy-api')
+    SHAPE extends the PETRA YANG module ('draft-petra-green-api')
     with additional optional sustainability-related metrics and, where
     needed, additional input parameters to qualify observation windows.
 
@@ -271,8 +272,12 @@ module irtf-shape {
     --user 'admin:admin' \
     --data-raw '{
       "input" : {
-        "src-ip": "10.10.10.10",
-        "dst-ip": "10.20.20.20",
+        "source": {
+          "ip-prefix": "10.10.10.0/24"
+        },
+        "destination": {
+          "ip-prefix": "10.20.20.0/24"
+        },
         "throughput": 40,
 
         "measurement-interval": 900,
@@ -512,23 +517,6 @@ module irtf-shape {
     }
   }
 
-  augment "/petra:energy/petra:query/petra:output/petra:result" {
-    description
-      "Additional status/error cases for PETRA query output to support
-       scenarios where energy data is unavailable or only partially
-       available along the resolved path.";
-
-    case energy-unavailable {
-      container energy-unavailable {
-        description
-          "The path was resolved but energy data is not available
-           for one or more segments. No watts-per-gigabit can be
-           returned. Corresponds to accuracy-unavailable in the
-           GREEN data-source-accuracy hierarchy.";
-      }
-    }
-  }
-
   augment "/petra:energy/petra:query/petra:output/petra:result/petra:success" {
     description
       "Add SHAPE sustainability metrics to the successful PETRA query result.";
@@ -556,11 +544,11 @@ deployment practices. Implementations MUST consider the following aspects:
 
 - **Information disclosure controls:** Returned sustainability data (i.e., energy mix, PUE, cooling-energy ratio, or temporal variability) can be  used to infer facility characteristics, topology, utilization patterns, or operational policies. Servers SHOULD support policy controls that reduce disclosure risk (e.g., aggregation, reduced precision, or suppressing specific metrics) for less-privileged clients.
 
-- **Input validation and bounds:** Servers MUST validate all inputs (i.e., including path identifiers, throughput, measurement-interval, and the recursive flag) and enforce reasonable bounds to prevent expensive computations and state growth. In particular, servers SHOULD enforce upper limits on observation-window durations, recursion depth/scope, and the amount of per-request data returned.
+- **Input validation and bounds:** Servers MUST validate all inputs (i.e., including PETRA endpoint identifiers, PETRA traffic characterization inputs such as throughput or time-window with transmitted volume, measurement-interval, and the recursive flag) and enforce reasonable bounds to prevent expensive computations and state growth. In particular, servers SHOULD enforce upper limits on observation-window durations, recursion depth/scope, and the amount of per-request data returned.
 
 - **Denial-of-service resilience:** SHAPE computations may involve multi-device sampling, aggregation, and historical lookups. Servers SHOULD implement DoS mitigations such as rate limiting, per-client quotas, request prioritization, and caching of commonly requested results. If requests are rejected due to overload or policy, servers SHOULD return explicit errors rather than silently ignoring requests.
 
-- **Multi-domain and recursive operation:** When the query is expanded recursively across administrative domains, each domain MUST enforce its own local policy and MUST NOT assume that ustream requests are safe. Implementations SHOULD ensure that recursive expansion does not leak credentials, does not bypass local authorization, and does not create amplification (e.g., fan-out storms). Responses obtained from external domains SHOULD be treated as untrusted inputs.
+- **Multi-domain and recursive operation:** When the query is expanded recursively across administrative domains, each domain MUST enforce its own local policy and MUST NOT assume that upstream requests are safe. Implementations SHOULD ensure that recursive expansion does not leak credentials, does not bypass local authorization, and does not create amplification (e.g., fan-out storms). Responses obtained from external domains SHOULD be treated as untrusted inputs.
 
 - **Integrity of measurement chain:** SHAPE metrics can be used for automated decisions (e.g., policy enforcement or gSLAs). Implementations SHOULD protect the integrity of the measurement pipeline (collection, aggregation, and publication) and SHOULD provide operational mechanisms such as audit logs and provenance tracking to help detect tampering or misconfiguration.
 
