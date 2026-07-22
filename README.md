@@ -9,7 +9,6 @@ This is the working area for the individual Internet-Draft, "Sustainability holi
 * [Individual Draft](https://datatracker.ietf.org/doc/html/draft-amalj-sustain-shape)
 * [Compare Editor's Copy to Individual Draft](https://galledohm.github.io/draft-amalj-sustain-shape/#go.draft-amalj-sustain-shape.diff)
 
-
 ## Contributing
 
 See the
@@ -28,4 +27,3 @@ $ make
 
 Command line usage requires that you have the necessary software installed.  See
 [the instructions](https://github.com/martinthomson/i-d-template/blob/main/doc/SETUP.md).
-

@@ -96,7 +96,7 @@ Sustainability is becoming one of the major societal goals for the next decade, 
 
 As with any other network metric, the energy traffic ratio could be collected from the underlying network infrastructure. However, there is not a common or single definition of energy and sustainability metrics towards network consumers so that they can be uniformly reported, particularly in heterogeneous network scenarios. This document introduces an API to query networks about the Energy Traffic Ratio.
 
-Beyond simple efficiency indicators such as Watts per Gigabit, network stakeholders are increasingly interested in richer sustainability information, such as carbon intensity, energy mix, power usage effectiveness (PUE), idle energy draw, transmission losses, and cooling overheads (e.g., Cooling Energy Ratio). In addition, operational and temporal aspects matter: the ability of a path to spend time in low-power states (Sleep-mode Availability), the variability of carbon intensity over time (Temporal Carbon Variability), and the stability of reported sustainability behavior (e.g., Sustainability Stability Index).
+Beyond simple efficiency indicators such as Watts per Gigabit, network stakeholders are increasingly interested in richer sustainability information, such as carbon intensity, energy mix, idle energy draw, transmission losses, and cooling overheads (e.g., Cooling Energy Ratio). In addition, operational and temporal aspects matter: the ability of a path to spend time in low-power states (Sleep-mode Availability), the variability of carbon intensity over time (Temporal Carbon Variability), and the stability of reported sustainability behavior (e.g., Sustainability Stability Index).
 
 Finally, sustainability data is increasingly used for automated decision-making and assurance (e.g., in green SLAs), which introduces a need for indicators of data quality and robustness. Metrics such as variance of energy consumption (VEC), anomaly detection signals (e.g., Anomaly Factor), and a trustworthiness score of data sources (TDS) help distinguish persistent characteristics from transient conditions and support more reliable sustainability reporting and policy enforcement.
 
@@ -123,7 +123,6 @@ This API allows to return a number of energy attributes associated with the path
 - **Energy Mix (%):** Percentage of energy used in the path that comes from different energy sources (e.g., solar, wind, biomass, nuclear, fossil fuel).
 - **Greenness Degree (%):** The aggregated percentage of energy consumed on the path that comes from renewable sources. Useful to rank and select paths based on renewable energy usage.
 - **Sustainability Score (0–1):** Composite metric combining greenness degree and energy efficiency (Watts per Gigabit per second), calculated as (Greenness/100) × 1/(1 + Watts per Gigabit per second). Higher values indicate more sustainable, efficient paths.
-- **Power Usage Effectiveness (PUE):** The ratio of total facility power consumption to the power consumption of networking/IT equipment.
 - **Transmission Loss (%):** The percentage of energy lost along the path due to transmission inefficiencies.
 - **Idle Energy Draw (Watts):** The amount of energy consumed by the path infrastructure when idle or under negligible load.
 - **Temporal Carbon Variability (TCV) (gCO2/kWh over period):** Quantifies how much the carbon intensity of the electricity powering the network path fluctuates over a defined time window (e.g., 15 minutes, 1 hour, 24 hours). It reflects the stability or volatility of the renewable/fossil mix affecting the path during that period. A low TCV indicates predictable carbon characteristics; a high TCV suggests inconsistent or rapidly changing energy sources.
@@ -132,7 +131,7 @@ This API allows to return a number of energy attributes associated with the path
 - **Trustworthiness Score of Data Sources (TDS) (0–1):** characterizes how reliable the API’s sustainability‑related data is, based on provenance, measurement quality, freshness, and cross‑source consistency. Higher values indicate stronger confidence in the reported data.
 - **Variance of Energy Consumption (VEC) (W^2):** VEC measures how much the energy use of the path fluctuates during an observation window. It helps detect energy instability, noisy equipment, or poorly tuned power‑management algorithms. High VEC indicates unstable or erratic energy usage; low VEC indicates consistent energy behavior.
 - **Anomaly Factor (AF) (z-factor):** Identifies whether the energy usage of a path at a given moment deviates significantly from its historical baseline or expected statistical behavior, normalized by standard deviation. AF < 1 indicates normal behavior, AF around 2 indicates elevated deviation, and AF > 3 indicates an anomaly (classic 3-sigma rule).
-- **Cooling Energy Ratio (CER) (%):** Quantifies the share of total energy consumed by a path or segment that is attributable to cooling rather than networking/IT workload. It parallels PUE but is per‑path or per‑segment, not facility‑wide. Higher values indicate higher cooling overhead relative to useful forwarding energy.
+- **Cooling Energy Ratio (CER) (%):** Quantifies the share of total energy consumed by a path or segment that is attributable to cooling rather than networking/IT workload. It is a path- or segment-level metric rather than a facility-wide efficiency metric. Higher values indicate higher cooling overhead relative to useful forwarding energy.
 
 These metrics are OPTIONAL, and an implementation MAY support a subset depending on available measurement capabilities.
 
@@ -206,7 +205,6 @@ module: irtf-shape
        +--ro energy-mix*                       -> list of sources and percentages
        +--ro greenness-degree?                 decimal64
        +--ro sustainability-score?             decimal64
-       +--ro pue?                              decimal64
        +--ro transmission-loss?                decimal64
        +--ro idle-watts?                       decimal64
        +--ro temporal-carbon-variability?      decimal64
@@ -303,7 +301,6 @@ module irtf-shape {
             ],
             "greenness-degree": 60.00,
             "sustainability-score": 0.312,
-            "pue": 1.20,
             "transmission-loss": 3.50,
             "idle-watts": 12.500,
             "temporal-carbon-variability": 14.250,
@@ -391,15 +388,6 @@ module irtf-shape {
       description
         "Composite metric combining greenness degree and efficiency.
          Suggested formula: (Greenness/100) × 1/(1 + Watts per Gigabit per second).";
-    }
-
-    leaf pue {
-      type decimal64 {
-        fraction-digits 2;
-        range "1..max";
-      }
-      description
-        "Power Usage Effectiveness: ratio of total facility energy to IT/networking energy.";
     }
 
     leaf transmission-loss {
@@ -561,7 +549,7 @@ Implementations MUST consider the following aspects:
   (ii) which PETRA and SHAPE metrics can be returned, and
   (iii) which precision/granularity is permitted.
 
-- **Information disclosure controls:** Returned sustainability data (i.e., energy mix, PUE, cooling-energy ratio, or temporal variability) can be  used to infer facility characteristics, topology, utilization patterns, or operational policies. Servers SHOULD support policy controls that reduce disclosure risk (e.g., aggregation, reduced precision, or suppressing specific metrics) for less-privileged clients.
+- **Information disclosure controls:** Returned sustainability data (i.e., energy mix, cooling-energy ratio, or temporal variability) can be used to infer facility characteristics, topology, utilization patterns, or operational policies. Servers SHOULD support policy controls that reduce disclosure risk (e.g., aggregation, reduced precision, or suppressing specific metrics) for less-privileged clients.
 
 - **Input validation and bounds:** Servers MUST validate all inputs (i.e., including PETRA endpoint identifiers, PETRA traffic characterization inputs such as throughput or time-window with transmitted volume, measurement-interval, and the recursive flag) and enforce reasonable bounds to prevent expensive computations and state growth. In particular, servers SHOULD enforce upper limits on observation-window durations, recursion depth/scope, and the amount of per-request data returned.
 
