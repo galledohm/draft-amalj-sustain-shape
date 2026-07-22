@@ -1976,53 +1976,51 @@ module irtf-shape {
       <h2 id="name-appendix-b-requirements-for">
 <a href="#name-appendix-b-requirements-for" class="section-name selfRef">Appendix B. Requirements for Energy Efficiency Management</a>
       </h2>
-<p id="appendix-C-1">The document Framework for Energy Efficiency Management <span>[<a href="#I-D.ietf-green-framework" class="cite xref">I-D.ietf-green-framework</a>]</span> describes a framework that comprises a controller element. In that document, the tasks of the controller are defined as "collection, compute and aggregate". In the context of that framework, the controller could also expose SHAPE to offer path-related energy information. The figure below updates the one present in <span>[<a href="#I-D.ietf-green-framework" class="cite xref">I-D.ietf-green-framework</a>]</span> to add an additional interface (interface 'g') to the controller to represent the Path Traffic Ratio API.<a href="#appendix-C-1" class="pilcrow">¶</a></p>
+<p id="appendix-C-1">The document Framework for Energy Efficiency Management <span>[<a href="#I-D.ietf-green-framework" class="cite xref">I-D.ietf-green-framework</a>]</span> describes a framework where an Energy Management System (EnMS) coordinates inventory, monitoring, and control functions through a controller element. In that context, SHAPE can be exposed via the API Service Interface (interface 'g') to provide path-related energy and sustainability information to external consumers.<a href="#appendix-C-1" class="pilcrow">¶</a></p>
 <div class="lang-bash sourcecode" id="appendix-C-2">
 <pre>
  +------------------------------------------------------------------+
- |                                                                  |
- |                  (3) Network Domain Level                        |-+
- |                                                                  | |
- +------------------------------------------------------------------+ |
-                                                                      |
- (a)              (b)          (c)                                    v
- Inventory        Monitor        DataSheets/DataBase and/or          (g)
- Of identity      Energy        | via API,                           API
- and Capability   Efficiency    | Metadata and other             Service
-      ^               ^         | device/component/network     Interface
-      |               |         | related information to be:          ^
-      |               |         |                                     |
-      |               |         |  .Power/Energy related metrics      |
-      |               |         |  .Origin of Energy Mix              |
-      |               |         |  .Carbon aware based on location    |
-      |               |         |                                     |
-      |               |         |                                     |
-      |               |         v                                     |
- +------------------------------------------------------------------+ |
- |                                                                  | |
- |       (2) controller (collection, compute and aggregate?)        |-+
- |                                                                  |
- +------------------------------------------------------------------+
-                 ^                      ^                      ^ |
-      (d)        |     (e)              |   (f)                | |
-      Inventory  |     Monitor power    |   Control            | |
-      Capability |     Proportion       |   (Energy saving     | |
-                 |     Energy efficiency|   Functionality      | |
-                 |     ratio, power     |   Localized mgmt/    | |
-                 |     consumption,     |   network wide mgmt) | |
-                 |     etc)             |                      | |
-                 |                      |                      | v
- +--------------------------------------------------------------------+
- |                                                                    |
- |                       (1) Device/Component                         |
- |                                                                    |
- | +---------+  +-----------+  +----------------+  +----------------+ |
- | | (I)     |  | (II)      |  | (III)          |  | (IV)           | |
- | |         |  |           |  | Legacy         |  | 'Attached'(PoE | |
- | | Device  |  | Component |  | Device         |  | end Point)     | |
- | |         |  |           |  |                |  |                | |
- | +---------+  +-----------+  +----------------+  +----------------+ |
- +--------------------------------------------------------------------+
+  |                                                                  |
+  |               (3) Energy Management System (EnMS)                |
+  |                                                                  |
+  +------------------------------------------------------------------+
+    ^               ^                                     |
+    | (a)           | (b)        +- (c)                   |
+    | Inventory of  | Monitor    | DataSheets/DataBase    |
+    | identity and  | Energy     | and/or via API,        v API Service
+    | Capability    | Efficiency | Metadata and other    (g) Interface
+    |               |            | device, component and
+    |               |            | network related        ^
+    |               |            | information            |
+    |               |            |                        |
+    |               |            |                        |
+    |               |            |                        |
+    |               |            v                        |
+  +------------------------------------------------------------------+
+  |                                                                  |
+  |       (2) Controller (collection, compute and aggregate?)        |
+  |                                                                  |
+  +------------------------------------------------------------------+
+    ^                   ^                         ^ |
+    | (d)               | (e)                     | | (f)
+    | Inventory         | Monitor power           | | Control
+    | Capability        | Proportion              | | (Energy saving
+    |                   | Energy efficiency       | | Functionality
+    |                   | ratio, power            | | Localized mgmt/
+    |                   | consumption,            | | network wide mgmt)
+    |                   | etc)                    | |
+    |                   |                         | v
+  +--------------------------------------------------------------------+
+  |                                                                    |
+  |                       (1) Device/Component                         |
+  |                                                                    |
+  | +---------+  +-----------+  +----------------+  +----------------+ |
+  | | (I)     |  | (II)      |  | (III)          |  | (IV)           | |
+  | |         |  |           |  | Legacy         |  | 'Attached'(PoE | |
+  | | Device  |  | Component |  | Device         |  | end Point)     | |
+  | |         |  |           |  |                |  |                | |
+  | +---------+  +-----------+  +----------------+  +----------------+ |
+  +--------------------------------------------------------------------+
 </pre><a href="#appendix-C-2" class="pilcrow">¶</a>
 </div>
 </section>
