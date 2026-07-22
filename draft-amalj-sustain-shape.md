@@ -79,6 +79,8 @@ informative:
   I-D.petra-green-api:
   I-D.bcmj-green-power-and-energy-yang:
   I-D.irtf-nmrg-ibn-usecases:
+  I-D.ietf-opsawg-rfc5706bis:
+  RFC9907:
 
 ...
 
@@ -328,7 +330,7 @@ module irtf-shape {
 
   // ===== Groupings =====
 
-  grouping shape-metrics-g {
+  grouping shape-metrics {
     description
       "Additional sustainability metrics defined by SHAPE that extend
        the base PETRA query output.";
@@ -524,22 +526,39 @@ module irtf-shape {
     container shape-metrics {
       description
         "Collection of additional sustainability metrics defined by SHAPE.";
-      uses shape-metrics-g;
+      uses shape-metrics;
     }
   }
 }
 ~~~~
 
+# Operational Considerations
+
+This section highlights deployment and operation aspects for SHAPE, following the operational guidance commonly applied to network management specifications and the guidance in [I-D.ietf-opsawg-rfc5706bis].
+
+- **Measurement method impacts:** SHAPE results can vary depending on how measurements are obtained (e.g., direct telemetry, estimates, model-based aggregation, or historical averaging). Operators SHOULD document which methods are used for each metric and SHOULD expose measurement confidence where possible.
+
+- **Traffic characterization impacts:** Query results can differ when traffic is characterized by throughput versus time-window plus transmitted volume. Implementations SHOULD document supported PETRA traffic-characterization modes and SHOULD avoid mixing incomparable measurement bases in trend analysis.
+
+- **Consumer intent differences:** Operational use cases may have different requirements. Customer-facing use cases (e.g., SD-WAN sustainability visibility) generally require stability, repeatability, and clear policy constraints, while operator optimization use cases may prioritize freshness and responsiveness over strict comparability.
+
+- **Recursive aggregation and double counting:** Recursive operation across domains introduces a risk of counting the same energy contribution multiple times. Implementations SHOULD define clear aggregation boundaries (e.g., segment ownership, handoff points, or unique contribution identifiers) and SHOULD provide auditability for aggregation logic.
+
+- **Subset support and policy controls:** SHAPE metrics are optional and may be supported only partially. Implementations SHOULD make unsupported metrics explicit in operational documentation and SHOULD align metric exposure with authorization and disclosure policies.
+
 # Security Considerations
 
-SHAPE queries and responses can reveal operational and business-sensitive information (e.g., energy efficiency, carbon footprint, facility overheads, and potentially location- or time-correlated behavior). SHAPE API MAY be exposed via management protocols such as NETCONF [RFC6241] and RESTCONF [RFC8040] and, therefore, it inherits their security properties and
-deployment practices. Implementations MUST consider the following aspects:
+The YANG module defined in this document augments PETRA query input and output nodes under `/petra:energy/petra:query`. SHAPE queries and responses can reveal operational and business-sensitive information (e.g., energy efficiency, carbon footprint, facility overheads, and potentially location- or time-correlated behavior). SHAPE API MAY be exposed via management protocols such as NETCONF [RFC6241] and RESTCONF [RFC8040] and, therefore, it inherits their security properties and deployment practices.
+
+The SHAPE input leaves `measurement-interval` and `recursive` are configuration inputs to an action invocation. Unauthorized manipulation of these inputs can increase computation cost and disclosure scope. The SHAPE output container `shape-metrics` exposes additional sustainability data and can reveal sensitive operational characteristics.
+
+Implementations MUST consider the following aspects:
 
 - **Secure transport:** Implementations MUST ensure confidentiality and integrity protection for SHAPE exchanges (i.e., by using secure transports mandated by the underlying management protocol). Where RESTCONF is used, HTTPS is REQUIRED by [RFC8040].
 
 - **Authentication and authorization:** SHAPE servers MUST authenticate clients and MUST enforce authorization on a per-request basis. Authorization SHOULD be granular (e.g., via access-control mechanisms such as NACM [RFC8341]) and cover:
   (i) which path endpoints can be queried,
-  (ii) which metrics can be returned (including SHAPE augmentations), and
+  (ii) which PETRA and SHAPE metrics can be returned, and
   (iii) which precision/granularity is permitted.
 
 - **Information disclosure controls:** Returned sustainability data (i.e., energy mix, PUE, cooling-energy ratio, or temporal variability) can be  used to infer facility characteristics, topology, utilization patterns, or operational policies. Servers SHOULD support policy controls that reduce disclosure risk (e.g., aggregation, reduced precision, or suppressing specific metrics) for less-privileged clients.
@@ -556,7 +575,17 @@ deployment practices. Implementations MUST consider the following aspects:
 
 # IANA Considerations
 
-This document has no IANA actions.
+IANA is requested to register the following YANG module in the "YANG Module Names" registry {{RFC3688}}.
+
+Name: irtf-shape
+
+Namespace: urn:ietf:params:xml:ns:yang:irtf-shape
+
+Prefix: shape
+
+Reference: RFC XXXX
+
+Maintained by IANA? N
 
 --- back
 
