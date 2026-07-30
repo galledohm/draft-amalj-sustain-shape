@@ -22,3 +22,5 @@ draft-amalj-sustain-shape.xml
 package-lock.json
 report.xml
 !requirements.txt
+stubs/*
+*.yang
