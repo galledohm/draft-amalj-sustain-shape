@@ -108,7 +108,7 @@ Finally, sustainability data is increasingly used for automated decision-making 
 
 This document describes an API to query a network about several sustainability-related metrics for a given path. SHAPE extends PETRA as defined in [I-D.petra-green-api] with additional sustainability metrics. It reuses PETRA endpoint identifiers for source and destination (e.g., IP address, IP prefix, MAC address, or slice SDP identifier) and PETRA traffic characterization (i.e., throughput, or time-window plus transmitted data volume), and returns sustainability information related to the traffic on the path. This is energy computed by the infrastructure that is dynamically part of the traffic path. The API is agnostic to the actual hops and underlying infrastructure that enables a path, which might change transparently to the API. This document only describes the API; the computation of the energy information to return is out of the scope of this document.
 
-The API can return a variety of energy-related parameters to provide a complete view of path sustainability. These include PETRA baseline efficiency indicators (e.g., Watts per Gigabit) and SHAPE-specific sustainability extensions (e.g., carbon intensity, energy mix, transmission losses, idle energy draw, cooling overheads, and the availability of low-power states such as sleep modes).
+The API can return a variety of energy-related parameters to provide a complete view of path sustainability. These include PETRA baseline efficiency indicators (e.g., Watts per Gigabit) and SHAPE-specific sustainability extensions (e.g., carbon intensity, energy mix, transmission losses, idle energy draw, cooling overheads, and the availability of low-power states such as sleep modes). For authoritative sustainability comparison and optimization, carbon-intensity and temporal variability indicators are the primary actionable metrics.
 
 In addition to point-in-time values, the API can expose temporal and assurance-oriented information, such as the variability of carbon intensity over a defined observation window, stability indices for sustainability behavior (e.g., Sustainability Stability Index), statistical measures of energy variability, anomaly signals, and indicators of confidence in the underlying data sources. Such metrics can help consumers distinguish persistent characteristics from transient fluctuations.
 
@@ -116,13 +116,13 @@ Furthermore, the SHAPE's energy parameters complement ongoing work on green serv
 
 ## Energy Information
 
-This API allows to return a number of energy attributes associated with the path and the traffic. PETRA defines the base query and baseline energy metric (Watts per Gigabit); SHAPE augments PETRA with additional sustainability metrics. Currently the parameters that could be returned as energy information as part of the query are:
+This API allows to return a number of energy attributes associated with the path and the traffic. PETRA defines the base query and baseline energy metric (Watts per Gigabit); SHAPE augments PETRA with additional sustainability metrics emphasizing carbon impact and operational variability. Currently the parameters that could be returned as energy information as part of the query are:
 
 - **Watts per Gigabit:** (Inherited from PETRA) How many Watts are consumed per Gigabit of traffic traversing the path.
-- **Carbon Intensity:** How much carbon emissions are generated as a consequence of the energy consumed.
-- **Energy Mix (%):** Percentage of energy used in the path that comes from different energy sources (e.g., solar, wind, biomass, nuclear, fossil fuel).
-- **Greenness Degree (%):** The aggregated percentage of energy consumed on the path that comes from renewable sources. Useful to rank and select paths based on renewable energy usage.
-- **Sustainability Score (0–1):** Composite metric combining greenness degree and energy efficiency (Watts per Gigabit per second), calculated as (Greenness/100) × 1/(1 + Watts per Gigabit per second). Higher values indicate more sustainable, efficient paths.
+- **Carbon Intensity:** How much carbon emissions (e.g., gCO2e/kWh) are generated as a consequence of the energy consumed. This is the primary actionable metric for sustainability-aware routing and policy enforcement.
+- **Energy Mix (%):** Percentage of energy used in the path that comes from different energy sources (e.g., solar, wind, biomass, nuclear, fossil fuel). Comparability of renewable percentages across paths may be limited by measurement scope, time window, and accounting/certification boundaries.
+- **Greenness Degree (%):** The aggregated percentage of energy consumed on the path that comes from renewable sources. This metric can support policy-driven reporting, but by itself does not fully characterize carbon impact across operators or countries.
+- **Sustainability Score (0–1):** (Informative) Composite metric combining greenness degree and energy efficiency. This can be used as an implementation-specific ranking aid, but carbon-intensity and temporal variability metrics are recommended for authoritative sustainability assessment.
 - **Transmission Loss (%):** The percentage of energy lost along the path due to transmission inefficiencies.
 - **Idle Energy Draw (Watts):** The amount of energy consumed by the path infrastructure when idle or under negligible load.
 - **Temporal Carbon Variability (TCV) (gCO2/kWh over period):** Quantifies how much the carbon intensity of the electricity powering the network path fluctuates over a defined time window (e.g., 15 minutes, 1 hour, 24 hours). It reflects the stability or volatility of the renewable/fossil mix affecting the path during that period. A low TCV indicates predictable carbon characteristics; a high TCV suggests inconsistent or rapidly changing energy sources.
@@ -192,7 +192,7 @@ SHAPE reuses PETRA input and output structures. In particular, source and destin
 ## Module Structure
 
 ~~~~yang
-module: irtf-shape
+module: ietf-shape
   +--imports ietf-petra
 
   augment /petra:energy/petra:query/petra:input:
@@ -219,9 +219,9 @@ module: irtf-shape
 ## Module Definition
 
 ~~~~yang
-module irtf-shape {
+module ietf-shape {
   yang-version 1.1;
-  namespace "urn:ietf:params:xml:ns:yang:irtf-shape";
+  namespace "urn:ietf:params:xml:ns:yang:ietf-shape";
   prefix shape;
 
   import ietf-petra {
@@ -267,7 +267,7 @@ module irtf-shape {
     access it like something this over RESTCONF:
 
     $ curl --location --request POST \
-    'https://localhost:8008/restconf/operations/irtf-shape:energy/query' \
+    'https://localhost:8008/restconf/operations/ietf-shape:energy/query' \
     --header 'Content-Type: application/yang-data+json' \
     --user 'admin:admin' \
     --data-raw '{
@@ -347,14 +347,38 @@ module irtf-shape {
         "Percentage contribution of each energy source to the total energy used on the path.";
       leaf source {
         type enumeration {
-          enum solar;
-          enum wind;
-          enum hydro;
-          enum nuclear;
-          enum coal;
-          enum gas;
-          enum biomass;
-          enum other;
+          enum solar {
+            description
+              "Energy sourced from solar generation.";
+          }
+          enum wind {
+            description
+              "Energy sourced from wind generation.";
+          }
+          enum hydro {
+            description
+              "Energy sourced from hydroelectric generation.";
+          }
+          enum nuclear {
+            description
+              "Energy sourced from nuclear generation.";
+          }
+          enum coal {
+            description
+              "Energy sourced from coal-based generation.";
+          }
+          enum gas {
+            description
+              "Energy sourced from gas-based generation.";
+          }
+          enum biomass {
+            description
+              "Energy sourced from biomass generation.";
+          }
+          enum other {
+            description
+              "Energy sourced from other or unspecified generation.";
+          }
         }
         description
           "Type of energy source.";
@@ -377,7 +401,10 @@ module irtf-shape {
       }
       units "%";
       description
-        "Aggregated percentage of energy from renewable sources.";
+        "Aggregated percentage of energy from renewable sources.
+         This metric is not always directly comparable across domains
+         and accounting boundaries; carbon-intensity is the primary
+         cross-domain sustainability metric.";
     }
 
     leaf sustainability-score {
@@ -386,8 +413,10 @@ module irtf-shape {
         range "0..1";
       }
       description
-        "Composite metric combining greenness degree and efficiency.
-         Suggested formula: (Greenness/100) × 1/(1 + Watts per Gigabit per second).";
+        "Informative composite metric combining greenness degree and
+         energy efficiency for implementation-specific ranking.
+         Carbon-intensity and temporal variability metrics are
+         RECOMMENDED for authoritative sustainability assessment.";
     }
 
     leaf transmission-loss {
@@ -528,6 +557,8 @@ This section highlights deployment and operation aspects for SHAPE, following th
 
 - **Traffic characterization impacts:** Query results can differ when traffic is characterized by throughput versus time-window plus transmitted volume. Implementations SHOULD document supported PETRA traffic-characterization modes and SHOULD avoid mixing incomparable measurement bases in trend analysis.
 
+- **Comparability caveat for renewable percentages:** Renewable-percentage indicators (e.g., greenness-degree) can be influenced by measurement boundaries, time windows, and accounting instruments. Implementations SHOULD avoid using a single aggregated renewable percentage as the sole basis for cross-domain optimization.
+
 - **Consumer intent differences:** Operational use cases may have different requirements. Customer-facing use cases (e.g., SD-WAN sustainability visibility) generally require stability, repeatability, and clear policy constraints, while operator optimization use cases may prioritize freshness and responsiveness over strict comparability.
 
 - **Recursive aggregation and double counting:** Recursive operation across domains introduces a risk of counting the same energy contribution multiple times. Implementations SHOULD define clear aggregation boundaries (e.g., segment ownership, handoff points, or unique contribution identifiers) and SHOULD provide auditability for aggregation logic.
@@ -565,9 +596,9 @@ Implementations MUST consider the following aspects:
 
 IANA is requested to register the following YANG module in the "YANG Module Names" registry {{RFC3688}}.
 
-Name: irtf-shape
+Name: ietf-shape
 
-Namespace: urn:ietf:params:xml:ns:yang:irtf-shape
+Namespace: urn:ietf:params:xml:ns:yang:ietf-shape
 
 Prefix: shape
 
@@ -598,7 +629,7 @@ This poses an additional challenge when trying to derive sustainability metrics.
 
 In this context, the SHAPE specification presented in this document enables the operator of the SD-WAN network to coordinate with the underlay operator to capture sustainability data. This in turns opens further use-cases, from observability and reporting to potentially overlay policies based on underlay energy data, further enabling an overall more sustainable operation of the network.
 
-In addition to energy considerations in SD-WAN deployments, SHAPE can also be leveraged for broader energy-aware service routing. In this context, network controllers and service orchestrators—such as SD-WAN controllers, transport SDN controllers, 5G slice orchestrators, or multi-domain service orchestrators—can use SHAPE metrics not only to balance latency, throughput, or load, but also to optimize path selection according to sustainability objectives. For example, paths with the lowest carbon intensity or the highest share of renewable energy in their energy mix could be preferred, enabling service differentiation where “green paths” are explicitly prioritized. This brings a paradigm where routing decisions are jointly driven by network performance and environmental impact.
+In addition to energy considerations in SD-WAN deployments, SHAPE can also be leveraged for broader energy-aware service routing. In this context, network controllers and service orchestrators—such as SD-WAN controllers, transport SDN controllers, 5G slice orchestrators, or multi-domain service orchestrators—can use SHAPE metrics not only to balance latency, throughput, or load, but also to optimize path selection according to sustainability objectives. Carbon-intensity and temporal-carbon-variability metrics are the primary optimization levers for low-emission routing. Energy mix and renewable percentages can complement decisions where policy requires specific sourcing criteria, but should not be used as standalone sustainability indicators. This brings a paradigm where routing decisions are jointly driven by network performance and carbon impact.
 
 ## A.2. Multilayer Energy Management
 {:numbered="false"}
@@ -610,9 +641,9 @@ Leveraging SHAPE API for multilayer L3-L1 collection use case enhances energy ma
 ## A.3. SLA Negotiation for Green Services
 {:numbered="false"}
 
-Another use case for SHAPE could be the negotiation of green Service Level Agreements (gSLAs) between operators and enterprise customers. By exposing SHAPE-derived metrics such as renewable energy percentage, carbon intensity, or sustainability scores, providers can offer differentiated SLAs that explicitly include environmental targets. This enables customers to select network services not only based on performance guarantees, but also on their environmental footprint, for example requesting that at least 60% of traffic be carried over renewable-powered infrastructure. Such gSLAs empower customers to align their digital services with corporate sustainability goals and reporting requirements, while operators can use SHAPE as the trusted source of verifiable energy data.
+Another use case for SHAPE could be the negotiation of green Service Level Agreements (gSLAs) between operators and enterprise customers. By exposing SHAPE-derived metrics such as carbon intensity, energy efficiency, and temporal variability, providers can offer differentiated SLAs that explicitly include environmental targets. This enables customers to select network services not only based on performance guarantees, but also on their actual carbon impact. Renewable-percentage and energy-mix metrics MAY support policy-driven sourcing requirements, but carbon-intensity remains the primary metric for carbon accounting and SLA compliance. Such gSLAs empower customers to align their digital services with verifiable sustainability goals, while operators can use SHAPE as the trusted source of energy and carbon data.
 
-gSLAs can be negotiated using customer-expressed green intents that specify objectives such as maximum energy consumption, minimum energy efficiency, carbon emission limits, and renewable energy usage [I-D.irtf-nmrg-ibn-usecases]. SHAPE's metrics, including Watts per Gigabit per second, carbon intensity, and energy mix, provide essential measurements to translate these intents into network configurations and to monitor compliance during service operation. The lifecycle of green intents, encompassing fulfillment and assurance phases [RFC9315], can be supported by SHAPE through its capability to deliver real-time energy metrics for translation into network policies and subsequent monitoring and validation.
+gSLAs can be negotiated using customer-expressed green intents that specify objectives such as maximum energy consumption, minimum energy efficiency, carbon emission limits, and renewable-energy constraints [I-D.irtf-nmrg-ibn-usecases]. SHAPE's metrics, including Watts per Gigabit, carbon intensity, temporal carbon variability, and energy mix, provide essential measurements to translate these intents into network configurations and to monitor compliance during service operation. The lifecycle of green intents, encompassing fulfillment and assurance phases [RFC9315], can be supported by SHAPE through its capability to deliver real-time energy metrics for translation into network policies and subsequent monitoring and validation.
 
 ## A.4. Energy-Aware UPF and Edge Selection in 5G
 {:numbered="false"}
